@@ -96,7 +96,7 @@ function initializeScale() {
         scaleContainer.appendChild(line);
         
         // 创建数字标签（每5kg显示一个数字）
-        if (kg % 5 === 0) {
+        if (kg % 10 === 0) {
             const number = document.createElement('div');
             number.className = 'scale-number';
             number.textContent = kg;
@@ -110,12 +110,12 @@ function initializeScale() {
 
 // 体重→角度：5kg=135°，100kg=45°，顺时针增大
 function mapWeightToAngle(weight) {
-    return 135 - (weight - 5) * (90 / 95);
+    return 0 + (weight - 5) * (90 / 95);
 }
 
 // 角度→体重：135°=5kg，45°=100kg，顺时针增大
 function mapAngleToWeight(angle) {
-    const weight = 5 + (135 - angle) * (95 / 90);
+    const weight = 5 + (angle - 0) * (95 / 90);
     return Math.max(5, Math.min(100, weight));
 }
 
@@ -127,7 +127,7 @@ function updateDialRotation() {
     semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
     
     // 旋转后，指针指向的刻度原始角度 = 90° - currentRotation
-    const originalAngle = 90 - currentRotation;
+    const originalAngle = 0 - currentRotation;
     currentWeight = mapAngleToWeight(originalAngle);
     
     // 更新显示
@@ -162,10 +162,10 @@ function setWeight(weight) {
     
     // 旋转角度 = 90° - 体重的原始角度
     const originalAngle = mapWeightToAngle(currentWeight);
-    currentRotation = 90 - originalAngle;
+    currentRotation = 0 - originalAngle;
     
     // 限制旋转范围
-    currentRotation = Math.max(-45, Math.min(45, currentRotation));
+    currentRotation = Math.max(-90, Math.min(0, currentRotation));
     
     // 更新刻度盘
     updateDialRotation();
@@ -238,13 +238,13 @@ function setupDialEvents() {
         
         // 更新旋转角度
         currentRotation += deltaAngle * 0.5;
-        currentRotation = Math.max(-45, Math.min(45, currentRotation));
+        currentRotation = Math.max(-90, Math.min(0, currentRotation));
         
         // 立即应用旋转
         semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
         
         // 从旋转角度计算体重
-        const originalAngle = 90 - currentRotation;
+        const originalAngle = 0 - currentRotation;
         currentWeight = mapAngleToWeight(originalAngle);
         
         startAngle = currentAngle;
@@ -304,13 +304,13 @@ function setupDialEvents() {
         const deltaAngle = currentAngle - startAngle;
         
         currentRotation += deltaAngle * 0.5;
-        currentRotation = Math.max(-45, Math.min(45, currentRotation));
+        currentRotation = Math.max(-90, Math.min(0, currentRotation));
         
         // 立即应用旋转
         semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
         
         // 从旋转角度计算体重
-        const originalAngle = 90 - currentRotation;
+        const originalAngle = 0 - currentRotation;
         currentWeight = mapAngleToWeight(originalAngle);
         
         startAngle = currentAngle;
