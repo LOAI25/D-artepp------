@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-Arteapp 医疗剂量计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --medical-blue: #2563eb;
+            --medical-green: #10b981;
+            --medical-amber: #f59e0b;
+            --medical-red: #dc2626;
+            --bg-light: #f8fafc;
+            --text-dark: #1f2937;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .medical-gradient {
+            background: linear-gradient(135deg, var(--medical-blue) 0%, var(--medical-green) 100%);
+        }
+        
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .number-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+        
+        .title-font {
+            font-family: 'Noto Serif SC', serif;
+        }
+        
+        /* 旋转剂量盘样式 */
+        .dose-wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #2563eb, #10b981, #f59e0b, #dc2626, #2563eb);
+            position: relative;
+            cursor: grab;
+            user-select: none;
+            margin: 0 auto;
+        }
+        
+        .dose-wheel:active {
+            cursor: grabbing;
+        }
+        
+        .dose-wheel::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+        
+        .dose-marker {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 20px solid #dc2626;
+            z-index: 10;
+        }
+        
+        .weight-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            text-align: center;
+        }
+        
+        .weight-scale {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+        
+        .scale-mark {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: #374151;
+            top: 5px;
+            left: 50%;
+            transform-origin: 50% 145px;
+        }
+        
+        .scale-number {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            color: #374151;
+            top: 25px;
+            left: 50%;
+            transform-origin: 50% 125px;
+        }
+        
+        .product-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            border-color: var(--medical-blue);
+            transform: translateY(-5px) rotateX(5deg);
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.2);
+        }
+        
+        .product-card.selected {
+            border-color: var(--medical-green);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+        }
+        
+        .dosage-result {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid var(--medical-blue);
+        }
+        
+        .coming-soon {
+            opacity: 0.6;
+            pointer-events: none;
+            position: relative;
+        }
+        
+        .coming-soon::after {
+            content: '即将推出';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.6); }
+        }
+        
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="bg-white/90 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 medical-gradient rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-bold title-font text-gray-800">D-Arteapp 剂量计算器</h1>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="index.html" class="text-blue-600 font-medium hover:text-blue-800 transition-colors">计算器</a>
+                    <a href="history.html" class="text-gray-600 hover:text-blue-600 transition-colors">历史记录</a>
+                    <a href="medications.html" class="text-gray-600 hover:text-blue-600 transition-colors">药品信息</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- 产品选择界面 -->
+        <div id="productSelection" class="mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold title-font text-gray-800 mb-4">选择产品</h2>
+                <p class="text-gray-600">请选择您需要计算剂量的产品</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <!-- D-Arteapp 产品卡片 -->
+                <div class="product-card glass-card rounded-xl p-6 cursor-pointer" onclick="selectProduct('darteapp')">
+                    <div class="text-center">
+                        <div class="w-16 h-16 medical-gradient rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 7.172V5L8 4z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">D-Arteapp</h3>
+                        <p class="text-gray-600 mb-4">抗疟疾药物剂量计算器</p>
+                        <div class="text-sm text-blue-600 font-medium">推荐产品</div>
+                    </div>
+                </div>
+                
+                <!-- Artesun 产品卡片 -->
+                <div class="product-card glass-card rounded-xl p-6 cursor-pointer coming-soon">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Artesun</h3>
+                        <p class="text-gray-600 mb-4">注射用青蒿琥酯</p>
+                        <div class="text-sm text-gray-500 font-medium">即将推出</div>
+                    </div>
+                </div>
+                
+                <!-- Argesun 产品卡片 -->
+                <div class="product-card glass-card rounded-xl p-6 cursor-pointer coming-soon">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Argesun</h3>
+                        <p class="text-gray-600 mb-4">复方青蒿素制剂</p>
+                        <div class="text-sm text-gray-500 font-medium">即将推出</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 剂量计算界面 -->
+        <div id="calculatorInterface" class="hidden">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold title-font text-gray-800 mb-4">D-Arteapp 剂量计算</h2>
+                <p class="text-gray-600">通过旋转剂量盘选择患者体重，系统将自动计算推荐剂量</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- 左侧：旋转剂量盘 -->
+                <div class="glass-card rounded-xl p-8 hover-lift">
+                    <h3 class="text-xl font-semibold title-font text-gray-800 mb-6 text-center">体重选择器</h3>
+                    
+                    <!-- 旋转剂量盘 -->
+                    <div class="relative mb-6">
+                        <div class="dose-marker"></div>
+                        <div id="doseWheel" class="dose-wheel">
+                            <div class="weight-scale" id="weightScale"></div>
+                            <div class="weight-display">
+                                <div id="currentWeight" class="text-4xl font-bold number-display text-gray-800">25.0</div>
+                                <div class="text-sm text-gray-600">kg</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 手动输入 -->
+                    <div class="text-center">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">或直接输入体重</label>
+                        <div class="flex items-center justify-center space-x-2">
+                            <input type="number" id="manualWeight" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 number-display text-center" 
+                                   value="25" min="5" max="100" step="0.1">
+                            <span class="text-gray-600">kg</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">范围: 5-100kg</p>
+                    </div>
+                    
+                    <!-- 快速选择按钮 -->
+                    <div class="mt-6">
+                        <div class="flex justify-center space-x-2">
+                            <button onclick="setWeight(10)" class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">10kg</button>
+                            <button onclick="setWeight(20)" class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">20kg</button>
+                            <button onclick="setWeight(30)" class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">30kg</button>
+                            <button onclick="setWeight(40)" class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">40kg</button>
+                            <button onclick="setWeight(50)" class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">50kg</button>
+                            <button onclick="setWeight(70)" class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors">70kg</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧：计算结果 -->
+                <div class="glass-card rounded-xl p-8 hover-lift">
+                    <h3 class="text-xl font-semibold title-font text-gray-800 mb-6">推荐剂量方案</h3>
+                    
+                    <div id="dosageResult" class="space-y-4">
+                        <!-- 结果将通过JavaScript动态生成 -->
+                        <div class="text-center text-gray-500 py-8">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-lg font-medium mb-2">请选择体重</p>
+                            <p class="text-sm">旋转左侧剂量盘来设置患者体重</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="mt-8 space-y-3">
+                        <button id="calculateBtn" class="w-full medical-gradient text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50" disabled>
+                            计算剂量
+                        </button>
+                        <button id="backToProduct" class="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                            返回产品选择
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white/90 backdrop-blur-md border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <p class="text-gray-600 text-sm">© 2025 D-Arteapp 医疗剂量计算器. 专业医疗工具，确保用药安全.</p>
+                <p class="text-gray-500 text-xs mt-2">本工具仅供参考，实际用药请遵循医嘱</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
