@@ -169,6 +169,9 @@ function setWeight(weight) {
     
     // 更新刻度盘
     updateDialRotation();
+    
+    // 不要在这里更新输入框的值，以免干扰用户输入
+    // updateWeightDisplay函数会处理这个
 }
 
 // ==================== 事件处理 ====================
@@ -178,7 +181,10 @@ function setupEventListeners() {
     // 手动体重输入
     const manualWeightInput = document.getElementById('manualWeight');
     if (manualWeightInput) {
-        manualWeightInput.addEventListener('input', handleManualWeightInput);
+        // 使用blur事件代替input事件，当输入框失去焦点时再处理
+        manualWeightInput.addEventListener('blur', handleManualWeightInput);
+        // 添加回车键支持
+        manualWeightInput.addEventListener('keydown', handleManualWeightKeyDown);
     }
     
     // 返回产品选择按钮
@@ -345,11 +351,32 @@ function setupDialEvents() {
 
 // 处理手动体重输入
 function handleManualWeightInput(event) {
-    const weight = parseFloat(event.target.value);
+    const input = event.target;
+    const weight = parseFloat(input.value);
+    
     if (!isNaN(weight) && weight >= 5 && weight <= 100) {
         setWeight(weight);
     } else {
-        event.target.value = currentWeight.toFixed(1);
+        // 输入无效，恢复之前的值
+        input.value = currentWeight.toFixed(1);
+    }
+}
+
+function handleManualWeightKeyDown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const input = event.target;
+        const weight = parseFloat(input.value);
+        
+        if (!isNaN(weight) && weight >= 5 && weight <= 100) {
+            setWeight(weight);
+        } else {
+            // 输入无效，恢复之前的值
+            input.value = currentWeight.toFixed(1);
+        }
+        
+        // 失去焦点
+        input.blur();
     }
 }
 
