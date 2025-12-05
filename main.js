@@ -1,5 +1,5 @@
-// D-Arteapp 医疗剂量计算器 - 主要JavaScript逻辑
-// 版本：v6.0 - 精简版（移除计算按钮和历史记录）
+// Medical Dosage Calculator - 主要JavaScript逻辑
+// 版本：v7.0 - 支持多产品计算器
 
 // 全局变量
 let currentWeight = 35.0;
@@ -19,11 +19,16 @@ const translations = {
         selectProductDesc: "Please select the product for dosage calculation",
         darteappDesc: "Antimalarial Dosage Calculator",
         artesunDesc: "Artesunate for Injection",
-        argesunDesc: "Compound Artemisinin Preparation",
+        argesunDesc: "Artesunate Injection Dosage Calculator",
         recommended: "Recommended",
         comingSoon: "Coming Soon",
-        calculatorTitle: "D-Arteapp Dosage Calculation",
-        calculatorDesc: "Select patient weight by sliding the dial, system will automatically calculate recommended dosage",
+        // D-Arteapp
+        darteappCalculatorTitle: "D-Arteapp Dosage Calculation",
+        darteappCalculatorDesc: "Select patient weight by sliding the dial, system will automatically calculate recommended dosage",
+        // Argesun
+        argesunCalculatorTitle: "Argesun® Dosage Calculation",
+        argesunCalculatorDesc: "Select patient weight, system will calculate recommended Argesun® injection dosage",
+        // 通用
         weightSelector: "Weight Selector",
         manualInput: "Or enter weight manually",
         weightRange: "Range: 5-100kg",
@@ -33,8 +38,13 @@ const translations = {
         backToProducts: "Back to Products",
         footerCopyright: "© 2025 Medical Dosage Calculator. Professional medical tool for safe medication.",
         footerDisclaimer: "This tool is for reference only, please follow medical advice for actual medication.",
-        dosageResultTitle: "Recommended dosage based on weight",
-        dosageResultSubtitle: "D-Arteapp - Three-day treatment plan",
+        // D-Arteapp 结果
+        darteappDosageResultTitle: "Recommended dosage based on weight",
+        darteappDosageResultSubtitle: "D-Arteapp - Three-day treatment plan",
+        // Argesun 结果
+        argesunDosageResultTitle: "Argesun® dosage based on weight",
+        argesunDosageResultSubtitle: "Argesun® - Injectable Artesunate",
+        // 通用结果
         patientWeight: "Patient Weight",
         recommendedMedication: "Recommended Medication Plan:",
         dosageInstruction: "Recommended dosage:",
@@ -44,7 +54,22 @@ const translations = {
         pleaseFollow: "Please strictly follow medical advice. Seek medical attention immediately if adverse reactions occur.",
         weightOutOfRange: "Weight out of range",
         checkWeight: "Please check if weight input is correct (5-100kg)",
-        selectProductAlert: "Please select a product first"
+        selectProductAlert: "Please select a product first",
+        // Argesun 特有
+        dosageFormula: "Dosage formula:",
+        dosagePerKg: "Dosage per kg:",
+        forAdults: "for patients ≥20kg",
+        forChildren: "for children <20kg",
+        reconstitutionSteps: "Reconstitution Steps:",
+        administrationMethod: "Administration Method:",
+        singleSolvent: "Single-solvent system",
+        immediateUse: "Must be used within 1 hour after reconstitution",
+        availableStrengths: "Available Strengths:",
+        reconstitutionVolume: "Reconstitution Volume:",
+        injectionVolume: "Injection Volume:",
+        selectStrength: "Select Strength Combination",
+        ivImNote: "Note: Same volume for IV and IM injection (20mg/ml)",
+        totalDose: "Total dose:"
     },
     zh: {
         appTitle: "医疗剂量计算器",
@@ -54,11 +79,16 @@ const translations = {
         selectProductDesc: "请选择您需要计算剂量的产品",
         darteappDesc: "抗疟疾药物剂量计算器",
         artesunDesc: "注射用青蒿琥酯",
-        argesunDesc: "复方青蒿素制剂",
+        argesunDesc: "注射用青蒿琥酯剂量计算器",
         recommended: "推荐产品",
         comingSoon: "即将推出",
-        calculatorTitle: "D-Arteapp 剂量计算",
-        calculatorDesc: "通过滑动刻度盘选择患者体重，系统将自动计算推荐剂量",
+        // D-Arteapp
+        darteappCalculatorTitle: "D-Arteapp 剂量计算",
+        darteappCalculatorDesc: "通过滑动刻度盘选择患者体重，系统将自动计算推荐剂量",
+        // Argesun
+        argesunCalculatorTitle: "Argesun® 剂量计算",
+        argesunCalculatorDesc: "选择患者体重，系统将计算推荐的Argesun®注射剂量",
+        // 通用
         weightSelector: "体重选择器",
         manualInput: "或直接输入体重",
         weightRange: "范围: 5-100kg",
@@ -68,8 +98,13 @@ const translations = {
         backToProducts: "返回产品选择",
         footerCopyright: "© 2025 医疗剂量计算器. 专业医疗工具，确保用药安全.",
         footerDisclaimer: "本工具仅供参考，实际用药请遵循医嘱",
-        dosageResultTitle: "基于体重 {weight}kg 的推荐剂量",
-        dosageResultSubtitle: "D-Arteapp - 三日疗程方案",
+        // D-Arteapp 结果
+        darteappDosageResultTitle: "基于体重 {weight}kg 的推荐剂量",
+        darteappDosageResultSubtitle: "D-Arteapp - 三日疗程方案",
+        // Argesun 结果
+        argesunDosageResultTitle: "基于体重 {weight}kg 的Argesun®剂量",
+        argesunDosageResultSubtitle: "Argesun® - 注射用青蒿琥酯",
+        // 通用结果
         patientWeight: "患者体重",
         recommendedMedication: "推荐用药方案：",
         dosageInstruction: "推荐用量：",
@@ -79,7 +114,22 @@ const translations = {
         pleaseFollow: "请严格遵医嘱使用，如出现不良反应请及时就医。",
         weightOutOfRange: "体重超出范围",
         checkWeight: "请检查体重输入是否正确 (5-100kg)",
-        selectProductAlert: "请先选择产品"
+        selectProductAlert: "请先选择产品",
+        // Argesun 特有
+        dosageFormula: "剂量公式：",
+        dosagePerKg: "每公斤剂量：",
+        forAdults: "适用于≥20kg患者",
+        forChildren: "适用于<20kg儿童",
+        reconstitutionSteps: "配制步骤：",
+        administrationMethod: "给药方法：",
+        singleSolvent: "单一溶剂系统",
+        immediateUse: "配制后1小时内必须使用",
+        availableStrengths: "可用规格：",
+        reconstitutionVolume: "配制体积：",
+        injectionVolume: "注射体积：",
+        selectStrength: "选择规格组合",
+        ivImNote: "注意：静脉和肌肉注射使用相同体积（20mg/ml）",
+        totalDose: "总剂量："
     },
     fr: {
         appTitle: "Calculateur de Dosage Médical",
@@ -89,11 +139,16 @@ const translations = {
         selectProductDesc: "Veuillez sélectionner le produit pour le calcul de dosage",
         darteappDesc: "Calculateur de Dosage Antipaludique",
         artesunDesc: "Artesunate pour Injection",
-        argesunDesc: "Préparation d'Artémisinine Composée",
+        argesunDesc: "Calculateur de Dosage Artesunate Injectible",
         recommended: "Recommandé",
         comingSoon: "Prochainement",
-        calculatorTitle: "Calcul de Dosage D-Arteapp",
-        calculatorDesc: "Sélectionnez le poids du patient en faisant glisser le cadran, le système calculera automatiquement le dosage recommandé",
+        // D-Arteapp
+        darteappCalculatorTitle: "Calcul de Dosage D-Arteapp",
+        darteappCalculatorDesc: "Sélectionnez le poids du patient en faisant glisser le cadran, le système calculera automatiquement le dosage recommandé",
+        // Argesun
+        argesunCalculatorTitle: "Calcul de Dosage Argesun®",
+        argesunCalculatorDesc: "Sélectionnez le poids du patient, le système calculera le dosage recommandé d'Argesun® par injection",
+        // 通用
         weightSelector: "Sélecteur de Poids",
         manualInput: "Ou saisir manuellement le poids",
         weightRange: "Plage: 5-100kg",
@@ -103,8 +158,13 @@ const translations = {
         backToProducts: "Retour aux Produits",
         footerCopyright: "© 2025 Calculateur de Dosage Médical. Outil médical professionnel pour une médication sûre.",
         footerDisclaimer: "Cet outil est à titre indicatif seulement, suivez les conseils médicaux pour la médication réelle.",
-        dosageResultTitle: "Dosage recommandé basé sur le poids",
-        dosageResultSubtitle: "D-Arteapp - Plan de traitement de trois jours",
+        // D-Arteapp 结果
+        darteappDosageResultTitle: "Dosage recommandé basé sur le poids",
+        darteappDosageResultSubtitle: "D-Arteapp - Plan de traitement de trois jours",
+        // Argesun 结果
+        argesunDosageResultTitle: "Dosage Argesun® basé sur le poids",
+        argesunDosageResultSubtitle: "Argesun® - Artesunate Injectible",
+        // 通用结果
         patientWeight: "Poids du Patient",
         recommendedMedication: "Plan de Médication Recommandé:",
         dosageInstruction: "Dosage recommandé:",
@@ -114,7 +174,22 @@ const translations = {
         pleaseFollow: "Veuillez suivre strictement les conseils médicaux. Consultez immédiatement un médecin en cas de réactions indésirables.",
         weightOutOfRange: "Poids hors limites",
         checkWeight: "Veuillez vérifier si la saisie du poids est correcte (5-100kg)",
-        selectProductAlert: "Veuillez d'abord sélectionner un produit"
+        selectProductAlert: "Veuillez d'abord sélectionner un produit",
+        // Argesun 特有
+        dosageFormula: "Formule de dosage:",
+        dosagePerKg: "Dosage par kg:",
+        forAdults: "pour patients ≥20kg",
+        forChildren: "pour enfants <20kg",
+        reconstitutionSteps: "Étapes de reconstitution:",
+        administrationMethod: "Méthode d'administration:",
+        singleSolvent: "Système à solvant unique",
+        immediateUse: "Doit être utilisé dans l'heure suivant la reconstitution",
+        availableStrengths: "Forces disponibles:",
+        reconstitutionVolume: "Volume de reconstitution:",
+        injectionVolume: "Volume d'injection:",
+        selectStrength: "Sélectionner la combinaison de forces",
+        ivImNote: "Note: Même volume pour injection IV et IM (20mg/ml)",
+        totalDose: "Dose totale:"
     }
 };
 
@@ -182,6 +257,64 @@ const darteappData = {
     ]
 };
 
+// Argesun 产品数据 - 基于你提供的剂量信息
+const argesunData = {
+    id: 'argesun',
+    name: 'Argesun®',
+    description: {
+        en: 'Artesunate Injection Dosage Calculator',
+        zh: '注射用青蒿琥酯剂量计算器',
+        fr: 'Calculateur de Dosage Artesunate Injectible'
+    },
+    // 剂量计算公式
+    dosageFormula: {
+        adult: 2.4, // mg/kg for ≥20kg
+        child: 3.0  // mg/kg for <20kg
+    },
+    // 可用规格
+    strengths: [
+        { 
+            mg: 30, 
+            solventVolume: 1.5, // ml
+            vialSize: "5ml",
+            ampouleSize: "3ml"
+        },
+        { 
+            mg: 60, 
+            solventVolume: 3.0,
+            vialSize: "5ml",
+            ampouleSize: "3ml"
+        },
+        { 
+            mg: 120, 
+            solventVolume: 6.0,
+            vialSize: "7ml",
+            ampouleSize: "6ml"
+        },
+        { 
+            mg: 180, 
+            solventVolume: 9.0,
+            vialSize: "10ml",
+            ampouleSize: "10ml"
+        }
+    ],
+    // 体重-规格对应表（基于你提供的表格）
+    weightStrengthMap: [
+        { min: 0, max: 6, strengths: [30] },
+        { min: 6, max: 10, strengths: [30] },
+        { min: 10, max: 11, strengths: [30, 30] }, // 可能需要2个30mg
+        { min: 11, max: 20, strengths: [60] },
+        { min: 20, max: 21, strengths: [60] },
+        { min: 21, max: 26, strengths: [60, 30] },
+        { min: 26, max: 38, strengths: [60, 30] },
+        { min: 38, max: 51, strengths: [120] },
+        { min: 51, max: 63, strengths: [120, 30] },
+        { min: 63, max: 76, strengths: [120, 60] },
+        { min: 76, max: 88, strengths: [120, 60, 30] },
+        { min: 88, max: 101, strengths: [180, 60] }
+    ]
+};
+
 // ==================== 多语言功能 ====================
 
 // 更新页面文本
@@ -200,6 +333,27 @@ function updatePageText() {
     // 更新剂量显示（如果已选择）
     if (selectedProduct) {
         updateDosageDisplay();
+        
+        // 更新计算器标题和描述
+        updateCalculatorTitleAndDesc();
+    }
+}
+
+// 更新计算器标题和描述
+function updateCalculatorTitleAndDesc() {
+    if (!selectedProduct) return;
+    
+    const calculatorTitle = document.querySelector('#calculatorInterface .text-3xl');
+    const calculatorDesc = document.querySelector('#calculatorInterface .text-gray-600');
+    
+    if (!calculatorTitle || !calculatorDesc) return;
+    
+    if (selectedProduct.id === 'darteapp') {
+        calculatorTitle.textContent = translations[currentLanguage].darteappCalculatorTitle || 'D-Arteapp Dosage Calculation';
+        calculatorDesc.textContent = translations[currentLanguage].darteappCalculatorDesc || 'Select patient weight by sliding the dial, system will automatically calculate recommended dosage';
+    } else if (selectedProduct.id === 'argesun') {
+        calculatorTitle.textContent = translations[currentLanguage].argesunCalculatorTitle || 'Argesun® Dosage Calculation';
+        calculatorDesc.textContent = translations[currentLanguage].argesunCalculatorDesc || 'Select patient weight, system will calculate recommended Argesun® dosage';
     }
 }
 
@@ -307,7 +461,7 @@ function initializeLanguage() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('D-Arteapp 剂量计算器加载完成');
+    console.log('Medical Dosage Calculator loaded');
     
     // 初始化语言
     initializeLanguage();
@@ -316,7 +470,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const calculatorInterface = document.getElementById('calculatorInterface');
     if (!calculatorInterface.classList.contains('hidden')) {
         initializeScale();
-        selectedProduct = darteappData;
         updateWeightDisplay();
     }
     
@@ -657,6 +810,9 @@ function selectProduct(product) {
     if (product === 'darteapp') {
         selectedProduct = darteappData;
         showCalculatorInterface();
+    } else if (product === 'argesun') {
+        selectedProduct = argesunData;
+        showCalculatorInterface();
     }
 }
 
@@ -675,11 +831,14 @@ function showCalculatorInterface() {
         // 设置初始体重
         setWeight(35);
         
+        // 更新计算器标题和描述
+        updateCalculatorTitleAndDesc();
+        
         // 添加选中效果
         document.querySelectorAll('.product-card').forEach(card => {
             card.classList.remove('selected');
             const title = card.querySelector('h3');
-            if (title && title.textContent === 'D-Arteapp') {
+            if (title && title.textContent === selectedProduct.name) {
                 card.classList.add('selected');
             }
         });
@@ -707,7 +866,15 @@ function showProductSelection() {
 
 // 辅助函数：处理剂量标题中的占位符
 function getDosageResultTitle(weight) {
-    const titleTemplate = translations[currentLanguage].dosageResultTitle || 'Recommended dosage based on weight';
+    let titleTemplate;
+    
+    if (selectedProduct.id === 'darteapp') {
+        titleTemplate = translations[currentLanguage].darteappDosageResultTitle || 'Recommended dosage based on weight';
+    } else if (selectedProduct.id === 'argesun') {
+        titleTemplate = translations[currentLanguage].argesunDosageResultTitle || 'Argesun® dosage based on weight';
+    } else {
+        titleTemplate = 'Recommended dosage based on weight';
+    }
     
     // 检查标题模板中是否包含 {weight} 占位符
     if (titleTemplate.includes('{weight}')) {
@@ -717,6 +884,16 @@ function getDosageResultTitle(weight) {
         // 没有占位符，直接返回标题
         return titleTemplate;
     }
+}
+
+// 获取产品副标题
+function getProductSubtitle() {
+    if (selectedProduct.id === 'darteapp') {
+        return translations[currentLanguage].darteappDosageResultSubtitle || 'D-Arteapp - Three-day treatment plan';
+    } else if (selectedProduct.id === 'argesun') {
+        return translations[currentLanguage].argesunDosageResultSubtitle || 'Argesun® - Injectable Artesunate';
+    }
+    return '';
 }
 
 // 更新剂量显示
@@ -738,6 +915,16 @@ function updateDosageDisplay() {
         return;
     }
     
+    // 根据产品类型选择不同的计算和显示方式
+    if (selectedProduct.id === 'darteapp') {
+        displayDarteappResult(dosageResult);
+    } else if (selectedProduct.id === 'argesun') {
+        displayArgesunResult(dosageResult);
+    }
+}
+
+// 显示D-Arteapp结果
+function displayDarteappResult(dosageResult) {
     const result = findDosageRecommendation(currentWeight);
     
     if (!result) {
@@ -789,13 +976,14 @@ function updateDosageDisplay() {
     
     // 使用辅助函数获取处理后的标题
     const dosageTitle = getDosageResultTitle(currentWeight);
+    const productSubtitle = getProductSubtitle();
     
     dosageResult.innerHTML = `
         <div class="dosage-result p-6 rounded-lg">
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
                 <div class="mb-4 md:mb-0">
                     <h4 class="text-lg font-semibold text-gray-800">${dosageTitle}</h4>
-                    <p class="text-sm text-gray-600 mt-1">${selectedProduct.name} - ${translations[currentLanguage].dosageResultSubtitle || 'Three-day treatment plan'}</p>
+                    <p class="text-sm text-gray-600 mt-1">${productSubtitle}</p>
                 </div>
                 <div class="text-center md:text-right">
                     <div class="text-2xl font-bold number-display text-blue-600">${currentWeight.toFixed(1)} kg</div>
@@ -825,7 +1013,148 @@ function updateDosageDisplay() {
     `;
 }
 
-// 查找剂量推荐
+// 显示Argesun结果
+function displayArgesunResult(dosageResult) {
+    const result = findArgesunDosage(currentWeight);
+    
+    if (!result) {
+        dosageResult.innerHTML = `
+            <div class="text-center text-red-500 py-8">
+                <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <p class="font-medium">${translations[currentLanguage].weightOutOfRange || 'Weight out of range'}</p>
+                <p class="text-sm">${translations[currentLanguage].checkWeight || 'Please check if weight input is correct (5-100kg)'}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // 根据当前语言获取药品单位的翻译
+    const getVialText = () => {
+        switch(currentLanguage) {
+            case 'zh': return '瓶';
+            case 'fr': return 'flacon';
+            default: return 'vial';
+        }
+    };
+    
+    const vialText = getVialText();
+    const mlText = currentLanguage === 'zh' ? '毫升' : 'ml';
+    
+    // 构建规格显示HTML
+    const strengthsHtml = Object.entries(result.recommendedStrengths).map(([strength, count]) => {
+        const strengthInfo = argesunData.strengths.find(s => s.mg === parseInt(strength));
+        return `
+            <div class="bg-white rounded-lg p-4 mb-3 border border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <span class="font-bold text-blue-700">${strength}</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-800">Argesun® ${strength}mg</div>
+                            <div class="text-sm text-gray-600">
+                                ${translations[currentLanguage].reconstitutionVolume || 'Reconstitution volume'}: ${strengthInfo.solventVolume}${mlText}
+                            </div>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full font-bold">
+                        ${count} ${vialText}${count > 1 ? 's' : ''}
+                    </span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // 使用辅助函数获取处理后的标题
+    const dosageTitle = getDosageResultTitle(currentWeight);
+    const productSubtitle = getProductSubtitle();
+    
+    dosageResult.innerHTML = `
+        <div class="dosage-result p-6 rounded-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                <div class="mb-4 md:mb-0">
+                    <h4 class="text-lg font-semibold text-gray-800">${dosageTitle}</h4>
+                    <p class="text-sm text-gray-600 mt-1">${productSubtitle}</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <div class="text-2xl font-bold number-display text-blue-600">${currentWeight.toFixed(1)} kg</div>
+                    <div class="text-sm text-gray-500">${translations[currentLanguage].patientWeight || 'Patient Weight'}</div>
+                </div>
+            </div>
+            
+            <!-- 剂量公式 -->
+            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                <div class="font-medium text-blue-800 mb-2">${translations[currentLanguage].dosageFormula || 'Dosage formula:'}</div>
+                <div class="text-sm text-blue-700">
+                    ${result.isChild ? 
+                        `• ${translations[currentLanguage].forChildren || 'for children <20kg'}: ${argesunData.dosageFormula.child} mg/kg` :
+                        `• ${translations[currentLanguage].forAdults || 'for patients ≥20kg'}: ${argesunData.dosageFormula.adult} mg/kg`
+                    }
+                </div>
+                <div class="mt-2 text-lg font-bold text-blue-800">
+                    ${translations[currentLanguage].totalDose || 'Total dose'}: <span class="number-display">${result.totalDose.toFixed(1)} mg</span>
+                </div>
+            </div>
+            
+            <!-- 推荐规格 -->
+            <div class="space-y-3 mb-6">
+                <h5 class="font-medium text-gray-700">${translations[currentLanguage].selectStrength || 'Select Strength Combination'}:</h5>
+                ${strengthsHtml}
+            </div>
+            
+            <!-- 配制和注射信息 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                    <div class="font-medium text-gray-700 mb-2">${translations[currentLanguage].reconstitutionVolume || 'Reconstitution Volume'}</div>
+                    <div class="text-2xl font-bold text-green-600 number-display">${result.reconstitutionVolume} ${mlText}</div>
+                    <div class="text-sm text-gray-500 mt-1">${translations[currentLanguage].singleSolvent || 'Single-solvent system'}</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                    <div class="font-medium text-gray-700 mb-2">${translations[currentLanguage].injectionVolume || 'Injection Volume'}</div>
+                    <div class="text-2xl font-bold text-purple-600 number-display">${result.injectionVolume.toFixed(1)} ${mlText}</div>
+                    <div class="text-sm text-gray-500 mt-1">Concentration: ${result.concentration}</div>
+                </div>
+            </div>
+            
+            <!-- 重要提示 -->
+            <div class="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-amber-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-sm text-amber-800 font-medium mb-1">
+                            ${translations[currentLanguage].ivImNote || 'Note: Same volume for IV and IM injection (20mg/ml)'}
+                        </p>
+                        <p class="text-sm text-amber-700">
+                            <strong>${translations[currentLanguage].administrationMethod || 'Administration Method:'}</strong> 
+                            ${translations[currentLanguage].immediateUse || 'Must be used within 1 hour after reconstitution'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 用药说明 -->
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-sm text-blue-800">
+                            <strong>${translations[currentLanguage].medicationInstructions || 'Medication Instructions:'}</strong> 
+                            ${translations[currentLanguage].pleaseFollow || 'Please strictly follow medical advice. Seek medical attention immediately if adverse reactions occur.'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 查找D-Arteapp剂量推荐
 function findDosageRecommendation(weight) {
     if (weight < 5 || weight > 100) return null;
     
@@ -869,6 +1198,52 @@ function findDosageRecommendation(weight) {
     };
 }
 
+// 查找Argesun剂量推荐
+function findArgesunDosage(weight) {
+    if (weight < 5 || weight > 100) return null;
+    
+    // 计算总剂量 (mg)
+    const dosagePerKg = weight < 20 ? argesunData.dosageFormula.child : argesunData.dosageFormula.adult;
+    const totalDose = weight * dosagePerKg;
+    
+    // 根据体重范围找到推荐的规格组合
+    let recommendedStrengths = [];
+    for (const range of argesunData.weightStrengthMap) {
+        if (weight >= range.min && weight < range.max) {
+            recommendedStrengths = range.strengths;
+            break;
+        }
+    }
+    
+    if (recommendedStrengths.length === 0) return null;
+    
+    // 计算每种规格需要多少瓶
+    const strengthCounts = {};
+    recommendedStrengths.forEach(strength => {
+        strengthCounts[strength] = (strengthCounts[strength] || 0) + 1;
+    });
+    
+    // 计算配制后的总体积 (ml) 和注射体积 (ml)
+    // 配制后浓度均为 20mg/ml
+    const reconstitutionVolume = recommendedStrengths.reduce((total, strength) => {
+        const strengthInfo = argesunData.strengths.find(s => s.mg === strength);
+        return total + (strengthInfo ? strengthInfo.solventVolume : 0);
+    }, 0);
+    
+    const injectionVolume = totalDose / 20; // 20mg/ml
+    
+    return {
+        weight: weight,
+        totalDose: totalDose,
+        dosagePerKg: dosagePerKg,
+        isChild: weight < 20,
+        recommendedStrengths: strengthCounts,
+        reconstitutionVolume: reconstitutionVolume,
+        injectionVolume: injectionVolume,
+        concentration: "20 mg/ml"
+    };
+}
+
 // ==================== 辅助函数 ====================
 
 function formatNumber(num) {
@@ -886,4 +1261,4 @@ window.selectProduct = selectProduct;
 window.setWeight = setWeight;
 window.changeLanguage = changeLanguage;
 
-console.log('D-Arteapp计算器脚本已加载');
+console.log('Medical Dosage Calculator脚本已加载');
