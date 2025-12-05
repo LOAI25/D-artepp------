@@ -1,5 +1,5 @@
 // D-Arteapp 医疗剂量计算器 - 主要JavaScript逻辑
-// 版本：v5.2 - 修复占位符问题版
+// 版本：v6.0 - 精简版（移除计算按钮和历史记录）
 
 // 全局变量
 let currentWeight = 35.0;
@@ -14,7 +14,6 @@ const translations = {
     en: {
         appTitle: "Medical Dosage Calculator",
         navCalculator: "Calculator",
-        navHistory: "History",
         navMedications: "Medications",
         selectProduct: "Select Product",
         selectProductDesc: "Please select the product for dosage calculation",
@@ -31,9 +30,8 @@ const translations = {
         dosagePlan: "Recommended Dosage Plan",
         selectWeight: "Please select weight",
         selectWeightDesc: "Slide the dial on the left to set patient weight",
-        calculateDosage: "Calculate Dosage",
         backToProducts: "Back to Products",
-        footerCopyright: "© 2025 D-Arteapp Medical Dosage Calculator. Professional medical tool for safe medication.",
+        footerCopyright: "© 2025 Medical Dosage Calculator. Professional medical tool for safe medication.",
         footerDisclaimer: "This tool is for reference only, please follow medical advice for actual medication.",
         dosageResultTitle: "Recommended dosage based on weight",
         dosageResultSubtitle: "D-Arteapp - Three-day treatment plan",
@@ -46,13 +44,11 @@ const translations = {
         pleaseFollow: "Please strictly follow medical advice. Seek medical attention immediately if adverse reactions occur.",
         weightOutOfRange: "Weight out of range",
         checkWeight: "Please check if weight input is correct (5-100kg)",
-        calculationComplete: "Calculation Complete ✓",
         selectProductAlert: "Please select a product first"
     },
     zh: {
         appTitle: "医疗剂量计算器",
         navCalculator: "计算器",
-        navHistory: "历史记录",
         navMedications: "药品信息",
         selectProduct: "选择产品",
         selectProductDesc: "请选择您需要计算剂量的产品",
@@ -69,9 +65,8 @@ const translations = {
         dosagePlan: "推荐剂量方案",
         selectWeight: "请选择体重",
         selectWeightDesc: "滑动左侧刻度盘来设置患者体重",
-        calculateDosage: "计算剂量",
         backToProducts: "返回产品选择",
-        footerCopyright: "© 2025 D-Arteapp 医疗剂量计算器. 专业医疗工具，确保用药安全.",
+        footerCopyright: "© 2025 医疗剂量计算器. 专业医疗工具，确保用药安全.",
         footerDisclaimer: "本工具仅供参考，实际用药请遵循医嘱",
         dosageResultTitle: "基于体重 {weight}kg 的推荐剂量",
         dosageResultSubtitle: "D-Arteapp - 三日疗程方案",
@@ -84,13 +79,11 @@ const translations = {
         pleaseFollow: "请严格遵医嘱使用，如出现不良反应请及时就医。",
         weightOutOfRange: "体重超出范围",
         checkWeight: "请检查体重输入是否正确 (5-100kg)",
-        calculationComplete: "计算完成 ✓",
         selectProductAlert: "请先选择产品"
     },
     fr: {
         appTitle: "Calculateur de Dosage Médical",
         navCalculator: "Calculateur",
-        navHistory: "Historique",
         navMedications: "Médicaments",
         selectProduct: "Sélectionner le Produit",
         selectProductDesc: "Veuillez sélectionner le produit pour le calcul de dosage",
@@ -107,9 +100,8 @@ const translations = {
         dosagePlan: "Plan de Dosage Recommandé",
         selectWeight: "Veuillez sélectionner le poids",
         selectWeightDesc: "Faites glisser le cadran à gauche pour définir le poids du patient",
-        calculateDosage: "Calculer le Dosage",
         backToProducts: "Retour aux Produits",
-        footerCopyright: "© 2025 D-Arteapp Calculateur de Dosage Médical. Outil médical professionnel pour une médication sûre.",
+        footerCopyright: "© 2025 Calculateur de Dosage Médical. Outil médical professionnel pour une médication sûre.",
         footerDisclaimer: "Cet outil est à titre indicatif seulement, suivez les conseils médicaux pour la médication réelle.",
         dosageResultTitle: "Dosage recommandé basé sur le poids",
         dosageResultSubtitle: "D-Arteapp - Plan de traitement de trois jours",
@@ -122,12 +114,11 @@ const translations = {
         pleaseFollow: "Veuillez suivre strictement les conseils médicaux. Consultez immédiatement un médecin en cas de réactions indésirables.",
         weightOutOfRange: "Poids hors limites",
         checkWeight: "Veuillez vérifier si la saisie du poids est correcte (5-100kg)",
-        calculationComplete: "Calcul Terminé ✓",
         selectProductAlert: "Veuillez d'abord sélectionner un produit"
     }
 };
 
-// D-Arteapp 产品数据（已添加多语言支持）
+// D-Arteapp 产品数据
 const darteappData = {
     id: 'darteapp',
     name: 'D-Arteapp',
@@ -214,8 +205,6 @@ function updatePageText() {
 
 // 更新"即将推出"标签
 function updateComingSoonLabels() {
-    // 由于伪元素不能直接通过JS修改，我们使用不同的方法
-    // 我们已经将文本移到单独的div中，所以只需更新那些div
     const comingSoonDivs = document.querySelectorAll('.coming-soon .text-sm.text-gray-500.font-medium');
     comingSoonDivs.forEach(div => {
         if (div.hasAttribute('data-i18n')) {
@@ -271,7 +260,6 @@ function updateLanguageSwitcherUI() {
     });
 }
 
-// 初始化语言 - 修复版：优先英文，保留浏览器检测
 // 初始化语言 - 检查是否是第一次访问
 function initializeLanguage() {
     console.log('Initializing language...');
@@ -444,12 +432,6 @@ function setupEventListeners() {
     const backButton = document.getElementById('backToProduct');
     if (backButton) {
         backButton.addEventListener('click', showProductSelection);
-    }
-    
-    // 计算按钮
-    const calculateButton = document.getElementById('calculateBtn');
-    if (calculateButton) {
-        calculateButton.addEventListener('click', calculateDosage);
     }
     
     // 快速选择按钮事件
@@ -701,12 +683,6 @@ function showCalculatorInterface() {
                 card.classList.add('selected');
             }
         });
-        
-        // 启用计算按钮
-        const calculateButton = document.getElementById('calculateBtn');
-        if (calculateButton) {
-            calculateButton.disabled = false;
-        }
     }
 }
 
@@ -728,35 +704,6 @@ function showProductSelection() {
 }
 
 // ==================== 剂量计算 ====================
-
-// 计算剂量
-function calculateDosage() {
-    if (!selectedProduct) {
-        alert(translations[currentLanguage].selectProductAlert || 'Please select a product first');
-        return;
-    }
-    
-    updateDosageDisplay();
-    
-    // 计算按钮动画效果
-    const btn = document.getElementById('calculateBtn');
-    if (btn) {
-        const originalText = btn.textContent;
-        
-        btn.textContent = translations[currentLanguage].calculationComplete || 'Calculation Complete ✓';
-        btn.classList.remove('medical-gradient');
-        btn.classList.add('bg-green-600');
-        
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.classList.remove('bg-green-600');
-            btn.classList.add('medical-gradient');
-        }, 1500);
-    }
-    
-    // 保存计算历史
-    saveCalculationHistory();
-}
 
 // 辅助函数：处理剂量标题中的占位符
 function getDosageResultTitle(weight) {
@@ -876,12 +823,6 @@ function updateDosageDisplay() {
             </div>
         </div>
     `;
-    
-    // 添加脉冲效果到计算按钮
-    const calculateButton = document.getElementById('calculateBtn');
-    if (calculateButton) {
-        calculateButton.classList.add('pulse-glow');
-    }
 }
 
 // 查找剂量推荐
@@ -926,47 +867,6 @@ function findDosageRecommendation(weight) {
         weight: weight,
         dosages: dosages
     };
-}
-
-// 保存计算历史
-function saveCalculationHistory() {
-    const result = findDosageRecommendation(currentWeight);
-    if (!result || !selectedProduct) return;
-    
-    const record = {
-        id: Date.now().toString(),
-        timestamp: new Date().toISOString(),
-        product: selectedProduct.name,
-        weight: currentWeight,
-        dosages: result.dosages,
-        language: currentLanguage
-    };
-    
-    // 获取现有历史
-    let history = [];
-    const savedHistory = localStorage.getItem('darteappCalculatorHistory');
-    if (savedHistory) {
-        try {
-            history = JSON.parse(savedHistory);
-        } catch (e) {
-            console.warn('解析历史记录失败:', e);
-        }
-    }
-    
-    // 添加到历史记录开头
-    history.unshift(record);
-    
-    // 限制历史记录数量（最多100条）
-    if (history.length > 100) {
-        history = history.slice(0, 100);
-    }
-    
-    // 保存到本地存储
-    try {
-        localStorage.setItem('darteappCalculatorHistory', JSON.stringify(history));
-    } catch (e) {
-        console.warn('保存历史记录失败:', e);
-    }
 }
 
 // ==================== 辅助函数 ====================
