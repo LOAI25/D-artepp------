@@ -485,7 +485,7 @@ function updateDosageDisplay() {
                 <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-bold">${dosage.count} 片</span>
             </div>
             <div class="text-sm text-gray-600">
-                推荐用量：每次 ${dosage.count} 片，每日2次，连续3日
+                推荐用量：每日 ${dosage.count} 片，连续3日
             </div>
         </div>
     `).join('');
@@ -516,7 +516,6 @@ function updateDosageDisplay() {
                     <div>
                         <p class="text-sm text-blue-800">
                             <strong>用药说明：</strong> 
-                            首次给药后，每12小时给药一次，连续3日。
                             请严格遵医嘱使用，如出现不良反应请及时就医。
                         </p>
                     </div>
