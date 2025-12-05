@@ -23,8 +23,8 @@ const translations = {
         recommended: "Recommended",
         comingSoon: "Coming Soon",
         // D-Arteapp
-        darteappCalculatorTitle: "D-Arteapp Dosage Calculation",
-        darteappCalculatorDesc: "Select patient weight by sliding the dial, system will automatically calculate recommended dosage",
+        darteappCalculatorTitle: "D-Arteapp® Dosage Calculation",
+        darteappCalculatorDesc: "Select patient weight, system will automatically calculate recommended D-Arteapp® dosage",
         // Argesun
         argesunCalculatorTitle: "Argesun® Dosage Calculation",
         argesunCalculatorDesc: "Select patient weight, system will calculate recommended Argesun® injection dosage",
@@ -42,8 +42,8 @@ const translations = {
         footerCopyright: "© 2025 Medical Dosage Calculator. Professional medical tool for safe medication.",
         footerDisclaimer: "This tool is for reference only, please follow medical advice for actual medication.",
         // D-Arteapp 结果
-        darteappDosageResultTitle: "Recommended dosage based on weight",
-        darteappDosageResultSubtitle: "D-Arteapp - Three-day treatment plan",
+        darteappDosageResultTitle: "D-Arteapp® dosage based on weight",
+        darteappDosageResultSubtitle: "D-Arteapp® - Three-day treatment plan",
         // Argesun 结果
         argesunDosageResultTitle: "Argesun® dosage based on weight",
         argesunDosageResultSubtitle: "Argesun® - Injectable Artesunate (Single Solvent)",
@@ -104,8 +104,8 @@ const translations = {
         recommended: "推荐产品",
         comingSoon: "即将推出",
         // D-Arteapp
-        darteappCalculatorTitle: "D-Arteapp 剂量计算",
-        darteappCalculatorDesc: "通过滑动刻度盘选择患者体重，系统将自动计算推荐剂量",
+        darteappCalculatorTitle: "D-Arteapp® 剂量计算",
+        darteappCalculatorDesc: "选择患者体重，系统将计算推荐的D-Arteapp®剂量",
         // Argesun
         argesunCalculatorTitle: "Argesun® 剂量计算",
         argesunCalculatorDesc: "选择患者体重，系统将计算推荐的Argesun®注射剂量",
@@ -123,8 +123,8 @@ const translations = {
         footerCopyright: "© 2025 医疗剂量计算器. 专业医疗工具，确保用药安全.",
         footerDisclaimer: "本工具仅供参考，实际用药请遵循医嘱",
         // D-Arteapp 结果
-        darteappDosageResultTitle: "基于体重 {weight}kg 的推荐剂量",
-        darteappDosageResultSubtitle: "D-Arteapp - 三日疗程方案",
+        darteappDosageResultTitle: "基于体重 {weight}kg 的D-Arteapp®剂量",
+        darteappDosageResultSubtitle: "D-Arteapp® - 三日疗程方案",
         // Argesun 结果
         argesunDosageResultTitle: "基于体重 {weight}kg 的Argesun®剂量",
         argesunDosageResultSubtitle: "Argesun® - 注射用青蒿琥酯 (单一溶剂)",
@@ -185,8 +185,8 @@ const translations = {
         recommended: "Recommandé",
         comingSoon: "Prochainement",
         // D-Arteapp
-        darteappCalculatorTitle: "Calcul de Dosage D-Arteapp",
-        darteappCalculatorDesc: "Sélectionnez le poids du patient en faisant glisser le cadran, le système calculera automatiquement le dosage recommandé",
+        darteappCalculatorTitle: "Calcul de Dosage D-Arteapp®",
+        darteappCalculatorDesc: "Sélectionnez le poids du patient en faisant glisser le cadran, le système calculera le dosage recommandé D-Arteapp®",
         // Argesun
         argesunCalculatorTitle: "Calcul de Dosage Argesun®",
         argesunCalculatorDesc: "Sélectionnez le poids du patient, le système calculera le dosage recommandé d'Argesun® par injection",
@@ -204,8 +204,8 @@ const translations = {
         footerCopyright: "© 2025 Calculateur de Dosage Médical. Outil médical professionnel pour une médication sûre.",
         footerDisclaimer: "Cet outil est à titre indicatif seulement, suivez les conseils médicaux pour la médication réelle.",
         // D-Arteapp 结果
-        darteappDosageResultTitle: "Dosage recommandé basé sur le poids",
-        darteappDosageResultSubtitle: "D-Arteapp - Plan de traitement de trois jours",
+        darteappDosageResultTitle: "Dosage D-Arteapp® basé sur le poids",
+        darteappDosageResultSubtitle: "D-Arteapp® - Plan de traitement de trois jours",
         // Argesun 结果
         argesunDosageResultTitle: "Dosage Argesun® basé sur le poids",
         argesunDosageResultSubtitle: "Argesun® - Artesunate Injectible (Solvant Unique)",
@@ -259,7 +259,7 @@ const translations = {
 // D-Arteapp 产品数据
 const darteappData = {
     id: 'darteapp',
-    name: 'D-Arteapp',
+    name: 'D-Arteapp®',
     description: {
         en: 'Antimalarial Dosage Calculator',
         zh: '抗疟疾药物剂量计算器',
@@ -468,8 +468,8 @@ function updateCalculatorTitleAndDesc() {
     if (!calculatorTitle || !calculatorDesc) return;
     
     if (selectedProduct.id === 'darteapp') {
-        calculatorTitle.textContent = translations[currentLanguage].darteappCalculatorTitle || 'D-Arteapp Dosage Calculation';
-        calculatorDesc.textContent = translations[currentLanguage].darteappCalculatorDesc || 'Select patient weight by sliding the dial, system will automatically calculate recommended dosage';
+        calculatorTitle.textContent = translations[currentLanguage].darteappCalculatorTitle || 'D-Arteapp® Dosage Calculation';
+        calculatorDesc.textContent = translations[currentLanguage].darteappCalculatorDesc || 'Select patient weight by sliding the dial, system will calculate recommended D-Arteapp® dosage';
     } else if (selectedProduct.id === 'argesun') {
         calculatorTitle.textContent = translations[currentLanguage].argesunCalculatorTitle || 'Argesun® Dosage Calculation';
         calculatorDesc.textContent = translations[currentLanguage].argesunCalculatorDesc || 'Select patient weight, system will calculate recommended Argesun® dosage';
@@ -994,7 +994,7 @@ function getDosageResultTitle(weight) {
     let titleTemplate;
     
     if (selectedProduct.id === 'darteapp') {
-        titleTemplate = translations[currentLanguage].darteappDosageResultTitle || 'Recommended dosage based on weight';
+        titleTemplate = translations[currentLanguage].darteappDosageResultTitle || 'D-Arteapp® dosage based on weight';
     } else if (selectedProduct.id === 'argesun') {
         titleTemplate = translations[currentLanguage].argesunDosageResultTitle || 'Argesun® dosage based on weight';
     } else if (selectedProduct.id === 'artesun') {
@@ -1016,7 +1016,7 @@ function getDosageResultTitle(weight) {
 // 获取产品副标题
 function getProductSubtitle() {
     if (selectedProduct.id === 'darteapp') {
-        return translations[currentLanguage].darteappDosageResultSubtitle || 'D-Arteapp - Three-day treatment plan';
+        return translations[currentLanguage].darteappDosageResultSubtitle || 'D-Arteapp® - Three-day treatment plan';
     } else if (selectedProduct.id === 'argesun') {
         return translations[currentLanguage].argesunDosageResultSubtitle || 'Argesun® - Injectable Artesunate (Single Solvent)';
     } else if (selectedProduct.id === 'artesun') {
