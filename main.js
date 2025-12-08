@@ -1,5 +1,6 @@
 // Medical Dosage Calculator - 主要JavaScript逻辑
-// 版本：v8.2 - 优化Artesun结果显示，保留患者最终用量信息
+// 版本：v8.3 - 优化规格组合算法，智能选择最佳规格
+// 日期：2024-01-20
 
 // 全局变量
 let currentWeight = 35.0;
@@ -103,7 +104,10 @@ const translations = {
         diluteNote: "Dilution Note:",
         removeAir: "Remove air from ampoule before saline injection",
         patientInjection: "Patient Final Injection Volume",
-        finalConcentration: "Final Concentration"
+        finalConcentration: "Final Concentration",
+        // 新增
+        alternativeOptions: "Alternative Options:",
+        optimalSelection: "Optimal Selection"
     },
     zh: {
         appTitle: "医疗剂量计算器",
@@ -196,7 +200,10 @@ const translations = {
         diluteNote: "稀释说明：",
         removeAir: "注射氯化钠前排出安瓿中的空气",
         patientInjection: "患者最终注射体积",
-        finalConcentration: "最终浓度"
+        finalConcentration: "最终浓度",
+        // 新增
+        alternativeOptions: "替代方案：",
+        optimalSelection: "最优选择"
     },
     fr: {
         appTitle: "Calculateur de Dosage Médical",
@@ -289,7 +296,10 @@ const translations = {
         diluteNote: "Note de dilution:",
         removeAir: "Retirer l'air de l'ampoule avant l'injection de saline",
         patientInjection: "Volume d'injection final pour le patient",
-        finalConcentration: "Concentration finale"
+        finalConcentration: "Concentration finale",
+        // 新增
+        alternativeOptions: "Options Alternatives:",
+        optimalSelection: "Sélection Optimale"
     }
 };
 
@@ -397,21 +407,6 @@ const argesunData = {
             vialSize: "10ml",
             ampouleSize: "10ml"
         }
-    ],
-    // 体重-规格对应表（基于你提供的表格）
-    weightStrengthMap: [
-        { min: 0, max: 6, strengths: [30] },
-        { min: 6, max: 10, strengths: [30] },
-        { min: 10, max: 11, strengths: [30, 30] }, // 可能需要2个30mg
-        { min: 11, max: 20, strengths: [60] },
-        { min: 20, max: 21, strengths: [60] },
-        { min: 21, max: 26, strengths: [60, 30] },
-        { min: 26, max: 38, strengths: [60, 30] },
-        { min: 38, max: 51, strengths: [120] },
-        { min: 51, max: 63, strengths: [120, 30] },
-        { min: 63, max: 76, strengths: [120, 60] },
-        { min: 76, max: 88, strengths: [120, 60, 30] },
-        { min: 88, max: 101, strengths: [180, 60] }
     ]
 };
 
@@ -463,15 +458,7 @@ const artesunData = {
     concentrations: {
         iv: 10, // mg/ml 静脉注射
         im: 20  // mg/ml 肌肉注射
-    },
-    // 体重-规格对应表（根据常见剂量推荐）
-    weightStrengthMap: [
-        { min: 0, max: 10, strengths: [30] },
-        { min: 10, max: 20, strengths: [60] },
-        { min: 20, max: 50, strengths: [120] },
-        { min: 50, max: 75, strengths: [120, 120] },
-        { min: 75, max: 101, strengths: [120, 120, 120] }
-    ]
+    }
 };
 
 // ==================== 多语言功能 ====================
@@ -1260,11 +1247,38 @@ function displayArgesunResult(container) {
     const vialText = getVialText();
     const mlText = currentLanguage === 'zh' ? '毫升' : 'ml';
     
+    // 获取替代方案
+    const alternatives = getArgesunAlternatives(result.combination);
+    
     // 构建规格显示HTML
     const strengthsHtml = Object.entries(result.recommendedStrengths).map(([strength, count]) => {
         const strengthInfo = argesunData.strengths.find(s => s.mg === parseInt(strength));
+        
+        // 查找此规格的替代方案
+        const strengthAlternatives = alternatives.filter(alt => {
+            const altStrength = parseInt(Object.keys(alt.recommendedStrengths)[0]);
+            return altStrength !== parseInt(strength) && 
+                   alt.totalMg >= result.totalDose * 0.95 && 
+                   alt.totalMg <= result.totalDose * 1.1;
+        });
+        
+        let alternativesHtml = '';
+        if (strengthAlternatives.length > 0) {
+            const altText = strengthAlternatives.map(alt => {
+                const altStrength = Object.keys(alt.recommendedStrengths)[0];
+                const altCount = alt.recommendedStrengths[altStrength];
+                return `${altCount} × ${altStrength}mg`;
+            }).join(', ');
+            
+            alternativesHtml = `
+                <div class="mt-2 text-xs text-gray-500">
+                    <span class="font-medium">${translations[currentLanguage].alternativeOptions || 'Alternative Options:'}</span> ${altText}
+                </div>
+            `;
+        }
+        
         return `
-            <div class="bg-white rounded-lg p-4 mb-3 border border-gray-200">
+            <div class="bg-white rounded-lg p-4 mb-3 border border-gray-200 hover:shadow transition-shadow">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center">
                         <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -1275,10 +1289,11 @@ function displayArgesunResult(container) {
                             <div class="text-sm text-gray-600">
                                 ${translations[currentLanguage].reconstitutionVolume || 'Reconstitution volume'}: ${strengthInfo.solventVolume}${mlText}
                             </div>
+                            ${alternativesHtml}
                         </div>
                     </div>
                     <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full font-bold">
-                        ${count} ${vialText}${count > 1 ? 's' : ''}
+                        ${count} ${vialText}${currentLanguage === 'zh' ? '' : (count > 1 ? 's' : '')}
                     </span>
                 </div>
             </div>
@@ -1313,6 +1328,9 @@ function displayArgesunResult(container) {
                 </div>
                 <div class="mt-2 text-lg font-bold text-blue-800">
                     ${translations[currentLanguage].totalDose || 'Total dose'}: <span class="number-display">${result.totalDose.toFixed(1)} mg</span>
+                </div>
+                <div class="mt-1 text-sm text-blue-600">
+                    ${translations[currentLanguage].optimalSelection || 'Optimal Selection'}: ${result.combination.map(mg => `${mg}mg`).join(' + ')}
                 </div>
             </div>
             
@@ -1372,7 +1390,7 @@ function displayArgesunResult(container) {
     `;
 }
 
-// 显示Artesun结果 - 已优化，保留最终患者用量信息
+// 显示Artesun结果 - 已优化，智能选择规格组合
 function displayArtesunResult(container) {
     const result = findArtesunDosage(currentWeight);
     
@@ -1385,9 +1403,35 @@ function displayArtesunResult(container) {
     const mlText = currentLanguage === 'zh' ? '毫升' : 'ml';
     const mgText = currentLanguage === 'zh' ? '毫克' : 'mg';
     
+    // 获取替代方案
+    const alternatives = getArtesunAlternatives(result.combination);
+    
     // 构建规格显示HTML
     const strengthsHtml = Object.entries(result.recommendedStrengths).map(([strength, count]) => {
         const strengthInfo = artesunData.strengths.find(s => s.mg === parseInt(strength));
+        
+        // 查找此规格的替代方案
+        const strengthAlternatives = alternatives.filter(alt => {
+            const altStrength = parseInt(Object.keys(alt.recommendedStrengths)[0]);
+            return altStrength !== parseInt(strength) && 
+                   alt.totalMg >= result.totalDose * 0.95 && 
+                   alt.totalMg <= result.totalDose * 1.1;
+        });
+        
+        let alternativesHtml = '';
+        if (strengthAlternatives.length > 0) {
+            const altText = strengthAlternatives.map(alt => {
+                const altStrength = Object.keys(alt.recommendedStrengths)[0];
+                const altCount = alt.recommendedStrengths[altStrength];
+                return `${altCount} × ${altStrength}mg`;
+            }).join(', ');
+            
+            alternativesHtml = `
+                <div class="mt-2 text-xs text-gray-500">
+                    <span class="font-medium">${translations[currentLanguage].alternativeOptions || 'Alternative Options:'}</span> ${altText}
+                </div>
+            `;
+        }
         
         return `
             <div class="bg-white rounded-lg p-4 mb-3 border border-gray-200 hover:shadow transition-shadow">
@@ -1402,10 +1446,11 @@ function displayArtesunResult(container) {
                                 <div>${translations[currentLanguage].bicarbonateVolume || 'Bicarbonate'}: ${strengthInfo.bicarbonateVolume}${mlText}</div>
                                 <div>${translations[currentLanguage].salineVolume || 'Saline'}: ${isIV ? strengthInfo.salineVolume : strengthInfo.imSalineVolume}${mlText}</div>
                             </div>
+                            ${alternativesHtml}
                         </div>
                     </div>
                     <span class="px-3 py-2 bg-green-100 text-green-800 rounded-full font-bold">
-                        ${count} ${translations[currentLanguage].vial || 'vial'}${count > 1 ? 's' : ''}
+                        ${count} ${translations[currentLanguage].vial || 'vial'}${currentLanguage === 'zh' ? '' : (count > 1 ? 's' : '')}
                     </span>
                 </div>
             </div>
@@ -1413,27 +1458,45 @@ function displayArtesunResult(container) {
     }).join('');
     
     // 核心信息卡片
+    // 核心信息卡片 - 修改后去掉总剂量
     const coreInfoCards = `
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <!-- 总剂量 -->
-            <div class="bg-blue-50 p-4 rounded-lg">
-                <div class="text-sm text-blue-600 mb-1">${translations[currentLanguage].totalDose || 'Total Dose'}</div>
-                <div class="text-2xl font-bold text-blue-700">${result.totalDose.toFixed(1)} ${mgText}</div>
-                <div class="text-xs text-blue-600 mt-1">${result.dosagePerKg} mg/kg × ${result.weight.toFixed(1)} kg</div>
-            </div>
-            
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <!-- 碳酸氢钠体积 -->
-            <div class="bg-green-50 p-4 rounded-lg">
-                <div class="text-sm text-green-600 mb-1">${translations[currentLanguage].bicarbonateVolume || 'Bicarbonate'}</div>
-                <div class="text-2xl font-bold text-green-700">${result.totalBicarbonateVolume} ${mlText}</div>
-                <div class="text-xs text-green-600 mt-1">${translations[currentLanguage].useAllBicarbonate || 'Use all bicarbonate'}</div>
+            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm text-green-600 mb-1">${translations[currentLanguage].bicarbonateVolume || 'Bicarbonate Volume'}</div>
+                        <div class="text-2xl font-bold text-green-700">${result.totalBicarbonateVolume} ${mlText}</div>
+                    </div>
+                    <div class="bg-green-100 p-2 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-xs text-green-600 mt-2">
+                    <div class="font-medium">${translations[currentLanguage].reconstitutionNote || 'Reconstitution Note'}:</div>
+                    <div>${translations[currentLanguage].useAllBicarbonate || 'Use all content of bicarbonate ampoule'}</div>
+                </div>
             </div>
             
             <!-- 氯化钠体积 -->
-            <div class="bg-purple-50 p-4 rounded-lg">
-                <div class="text-sm text-purple-600 mb-1">${translations[currentLanguage].salineVolume || 'Saline'}</div>
-                <div class="text-2xl font-bold text-purple-700">${result.totalSalineVolume} ${mlText}</div>
-                <div class="text-xs text-purple-600 mt-1">${translations[currentLanguage].removeAir || 'Remove air before injection'}</div>
+            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm text-purple-600 mb-1">${translations[currentLanguage].salineVolume || 'Saline Volume'}</div>
+                        <div class="text-2xl font-bold text-purple-700">${result.totalSalineVolume} ${mlText}</div>
+                    </div>
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-xs text-purple-600 mt-2">
+                    <div class="font-medium">${translations[currentLanguage].diluteNote || 'Dilution Note'}:</div>
+                    <div>${translations[currentLanguage].removeAir || 'Remove air from ampoule before saline injection'}</div>
+                </div>
             </div>
         </div>
     `;
@@ -1451,8 +1514,6 @@ function displayArtesunResult(container) {
                 <div class="text-sm text-gray-600">${translations[currentLanguage].finalInjectionVolume || 'Final volume'}</div>
             </div>
         </div>
-        
-        <!-- 删除了包含最终浓度和计算过程的 grid 部分 -->
     </div>
 `;
     
@@ -1481,9 +1542,11 @@ function displayArtesunResult(container) {
             <!-- 规格选择 -->
             <div class="mb-6">
                 <h5 class="font-medium text-gray-700 mb-3">${translations[currentLanguage].selectStrength || 'Select Strength'}:</h5>
+                <div class="mb-2 text-sm text-blue-600">
+                    ${translations[currentLanguage].optimalSelection || 'Optimal Selection'}: ${result.combination.map(mg => `${mg}mg`).join(' + ')}
+                </div>
                 ${strengthsHtml}
             </div>
-            
             
             <!-- 重要警告 -->
             <div class="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
@@ -1521,6 +1584,8 @@ function displayArtesunResult(container) {
         </div>
     `;
 }
+
+// ==================== 剂量计算核心算法 ====================
 
 // 查找D-Arteapp剂量推荐
 function findDosageRecommendation(weight) {
@@ -1566,7 +1631,7 @@ function findDosageRecommendation(weight) {
     };
 }
 
-// 查找Argesun剂量推荐
+// 查找Argesun剂量推荐 - 智能选择最佳规格组合
 function findArgesunDosage(weight) {
     if (weight < 5 || weight > 100) return null;
     
@@ -1574,26 +1639,22 @@ function findArgesunDosage(weight) {
     const dosagePerKg = weight < 20 ? argesunData.dosageFormula.child : argesunData.dosageFormula.adult;
     const totalDose = weight * dosagePerKg;
     
-    // 根据体重范围找到推荐的规格组合
-    let recommendedStrengths = [];
-    for (const range of argesunData.weightStrengthMap) {
-        if (weight >= range.min && weight < range.max) {
-            recommendedStrengths = range.strengths;
-            break;
-        }
-    }
+    // 智能选择最佳规格组合
+    const bestCombination = findBestArgesunStrengthCombination(totalDose);
     
-    if (recommendedStrengths.length === 0) return null;
+    if (!bestCombination) return null;
+    
+    const { combination, totalMg } = bestCombination;
     
     // 计算每种规格需要多少瓶
     const strengthCounts = {};
-    recommendedStrengths.forEach(strength => {
+    combination.forEach(strength => {
         strengthCounts[strength] = (strengthCounts[strength] || 0) + 1;
     });
     
     // 计算配制后的总体积 (ml) 和注射体积 (ml)
     // 配制后浓度均为 20mg/ml
-    const reconstitutionVolume = recommendedStrengths.reduce((total, strength) => {
+    const reconstitutionVolume = combination.reduce((total, strength) => {
         const strengthInfo = argesunData.strengths.find(s => s.mg === strength);
         return total + (strengthInfo ? strengthInfo.solventVolume : 0);
     }, 0);
@@ -1606,6 +1667,8 @@ function findArgesunDosage(weight) {
         dosagePerKg: dosagePerKg,
         isChild: weight < 20,
         recommendedStrengths: strengthCounts,
+        combination: combination, // 保存实际的组合数组
+        totalMg: totalMg, // 实际使用的总毫克数
         reconstitutionVolume: reconstitutionVolume,
         injectionVolume: injectionVolume,
         concentration: "20 mg/ml",
@@ -1613,7 +1676,145 @@ function findArgesunDosage(weight) {
     };
 }
 
-// 查找Artesun剂量推荐
+// Argesun的智能组合选择算法
+function findBestArgesunStrengthCombination(totalDose) {
+    const strengths = argesunData.strengths.map(s => s.mg).sort((a, b) => b - a); // 从大到小排序
+    
+    // 简单的贪心算法：优先使用大规格
+    let combination = [];
+    let remaining = totalDose;
+    
+    for (const strength of strengths) {
+        const count = Math.floor(remaining / strength);
+        if (count > 0) {
+            for (let i = 0; i < count; i++) {
+                combination.push(strength);
+            }
+            remaining -= count * strength;
+        }
+    }
+    
+    // 如果还有剩余，添加一个最小规格
+    if (remaining > 0) {
+        combination.push(strengths[strengths.length - 1]);
+    }
+    
+    const totalMg = combination.reduce((sum, mg) => sum + mg, 0);
+    
+    // 优化：尝试用更少的瓶数达到相同或相近的剂量
+    const optimizedCombination = optimizeArgesunCombination(combination, totalDose);
+    
+    if (optimizedCombination && optimizedCombination.length < combination.length) {
+        const optimizedMg = optimizedCombination.reduce((sum, mg) => sum + mg, 0);
+        if (optimizedMg >= totalDose * 0.95) {
+            return {
+                combination: optimizedCombination,
+                totalMg: optimizedMg
+            };
+        }
+    }
+    
+    return {
+        combination: combination,
+        totalMg: totalMg
+    };
+}
+
+// 优化Argesun组合：减少瓶数
+function optimizeArgesunCombination(combination, totalDose) {
+    const strengths = argesunData.strengths.map(s => s.mg).sort((a, b) => b - a);
+    const currentCombination = [...combination];
+    
+    // 统计各规格数量
+    const counts = {};
+    currentCombination.forEach(mg => {
+        counts[mg] = (counts[mg] || 0) + 1;
+    });
+    
+    // 尝试用大规格替换多个小规格
+    // 4个30mg可以用1个120mg替换
+    if (counts[30] >= 4) {
+        const newCombination = currentCombination.filter(mg => mg !== 30);
+        const thirtyCount = counts[30] || 0;
+        const replacements = Math.floor(thirtyCount / 4);
+        for (let i = 0; i < replacements; i++) {
+            newCombination.push(120);
+        }
+        for (let i = 0; i < thirtyCount % 4; i++) {
+            newCombination.push(30);
+        }
+        return newCombination.sort((a, b) => b - a);
+    }
+    
+    // 2个30mg可以用1个60mg替换
+    if (counts[30] >= 2) {
+        const newCombination = currentCombination.filter(mg => mg !== 30);
+        const thirtyCount = counts[30] || 0;
+        const replacements = Math.floor(thirtyCount / 2);
+        for (let i = 0; i < replacements; i++) {
+            newCombination.push(60);
+        }
+        for (let i = 0; i < thirtyCount % 2; i++) {
+            newCombination.push(30);
+        }
+        return newCombination.sort((a, b) => b - a);
+    }
+    
+    // 2个60mg可以用1个120mg替换
+    if (counts[60] >= 2) {
+        const newCombination = currentCombination.filter(mg => mg !== 60);
+        const sixtyCount = counts[60] || 0;
+        const replacements = Math.floor(sixtyCount / 2);
+        for (let i = 0; i < replacements; i++) {
+            newCombination.push(120);
+        }
+        for (let i = 0; i < sixtyCount % 2; i++) {
+            newCombination.push(60);
+        }
+        return newCombination.sort((a, b) => b - a);
+    }
+    
+    return null;
+}
+
+// 获取Argesun替代方案
+function getArgesunAlternatives(currentCombination) {
+    const strengths = argesunData.strengths.map(s => s.mg).sort((a, b) => b - a);
+    const currentTotal = currentCombination.reduce((sum, mg) => sum + mg, 0);
+    const alternatives = [];
+    
+    // 生成可能的替代组合
+    for (let i = 0; i < strengths.length; i++) {
+        const altCombination = [];
+        const altStrength = strengths[i];
+        
+        // 尝试使用单一规格
+        const count = Math.ceil(currentTotal / altStrength);
+        for (let j = 0; j < count; j++) {
+            altCombination.push(altStrength);
+        }
+        
+        const altTotal = altCombination.reduce((sum, mg) => sum + mg, 0);
+        
+        // 只添加合理的替代方案（不超过当前总剂量的±10%）
+        if (altTotal >= currentTotal * 0.95 && altTotal <= currentTotal * 1.1) {
+            const strengthCounts = {};
+            altCombination.forEach(mg => {
+                strengthCounts[mg] = (strengthCounts[mg] || 0) + 1;
+            });
+            
+            alternatives.push({
+                combination: altCombination,
+                totalMg: altTotal,
+                recommendedStrengths: strengthCounts
+            });
+        }
+    }
+    
+    return alternatives;
+}
+
+// 查找Artesun剂量推荐 - 智能选择最佳规格组合
 function findArtesunDosage(weight) {
     if (weight < 5 || weight > 100) return null;
     
@@ -1621,20 +1822,16 @@ function findArtesunDosage(weight) {
     const dosagePerKg = weight < 20 ? artesunData.dosageFormula.child : artesunData.dosageFormula.adult;
     const totalDose = weight * dosagePerKg;
     
-    // 根据体重范围找到推荐的规格组合
-    let recommendedStrengths = [];
-    for (const range of artesunData.weightStrengthMap) {
-        if (weight >= range.min && weight < range.max) {
-            recommendedStrengths = range.strengths;
-            break;
-        }
-    }
+    // 智能选择最佳规格组合
+    const bestCombination = findBestArtesunStrengthCombination(totalDose);
     
-    if (recommendedStrengths.length === 0) return null;
+    if (!bestCombination) return null;
+    
+    const { combination, totalMg } = bestCombination;
     
     // 计算每种规格需要多少瓶
     const strengthCounts = {};
-    recommendedStrengths.forEach(strength => {
+    combination.forEach(strength => {
         strengthCounts[strength] = (strengthCounts[strength] || 0) + 1;
     });
     
@@ -1642,7 +1839,7 @@ function findArtesunDosage(weight) {
     let totalBicarbonateVolume = 0;
     let totalSalineVolume = 0;
     
-    recommendedStrengths.forEach(strength => {
+    combination.forEach(strength => {
         const strengthInfo = artesunData.strengths.find(s => s.mg === strength);
         if (strengthInfo) {
             totalBicarbonateVolume += strengthInfo.bicarbonateVolume;
@@ -1692,6 +1889,8 @@ function findArtesunDosage(weight) {
         dosagePerKg: dosagePerKg,
         isChild: isChild,
         recommendedStrengths: strengthCounts,
+        combination: combination, // 保存实际的组合数组
+        totalMg: totalMg, // 实际使用的总毫克数
         totalBicarbonateVolume: parseFloat(totalBicarbonateVolume.toFixed(1)),
         totalSalineVolume: parseFloat(totalSalineVolume.toFixed(1)),
         exactInjectionVolume: parseFloat(exactInjectionVolume.toFixed(2)),
@@ -1701,6 +1900,143 @@ function findArtesunDosage(weight) {
     };
 }
 
+// Artesun的智能组合选择算法
+function findBestArtesunStrengthCombination(totalDose) {
+    const strengths = artesunData.strengths.map(s => s.mg).sort((a, b) => b - a); // 从大到小排序
+    
+    // 简单的贪心算法：优先使用大规格
+    let combination = [];
+    let remaining = totalDose;
+    
+    for (const strength of strengths) {
+        const count = Math.floor(remaining / strength);
+        if (count > 0) {
+            for (let i = 0; i < count; i++) {
+                combination.push(strength);
+            }
+            remaining -= count * strength;
+        }
+    }
+    
+    // 如果还有剩余，添加一个最小规格
+    if (remaining > 0) {
+        combination.push(strengths[strengths.length - 1]);
+    }
+    
+    const totalMg = combination.reduce((sum, mg) => sum + mg, 0);
+    
+    // 优化：尝试用更少的瓶数达到相同或相近的剂量
+    const optimizedCombination = optimizeArtesunCombination(combination, totalDose);
+    
+    if (optimizedCombination && optimizedCombination.length < combination.length) {
+        const optimizedMg = optimizedCombination.reduce((sum, mg) => sum + mg, 0);
+        if (optimizedMg >= totalDose * 0.95) {
+            return {
+                combination: optimizedCombination,
+                totalMg: optimizedMg
+            };
+        }
+    }
+    
+    return {
+        combination: combination,
+        totalMg: totalMg
+    };
+}
+
+// 优化Artesun组合：减少瓶数
+function optimizeArtesunCombination(combination, totalDose) {
+    const strengths = artesunData.strengths.map(s => s.mg).sort((a, b) => b - a);
+    const currentCombination = [...combination];
+    
+    // 统计各规格数量
+    const counts = {};
+    currentCombination.forEach(mg => {
+        counts[mg] = (counts[mg] || 0) + 1;
+    });
+    
+    // 尝试用大规格替换多个小规格
+    // 4个30mg可以用1个120mg替换
+    if (counts[30] >= 4) {
+        const newCombination = currentCombination.filter(mg => mg !== 30);
+        const thirtyCount = counts[30] || 0;
+        const replacements = Math.floor(thirtyCount / 4);
+        for (let i = 0; i < replacements; i++) {
+            newCombination.push(120);
+        }
+        for (let i = 0; i < thirtyCount % 4; i++) {
+            newCombination.push(30);
+        }
+        return newCombination.sort((a, b) => b - a);
+    }
+    
+    // 2个30mg可以用1个60mg替换
+    if (counts[30] >= 2) {
+        const newCombination = currentCombination.filter(mg => mg !== 30);
+        const thirtyCount = counts[30] || 0;
+        const replacements = Math.floor(thirtyCount / 2);
+        for (let i = 0; i < replacements; i++) {
+            newCombination.push(60);
+        }
+        for (let i = 0; i < thirtyCount % 2; i++) {
+            newCombination.push(30);
+        }
+        return newCombination.sort((a, b) => b - a);
+    }
+    
+    // 2个60mg可以用1个120mg替换
+    if (counts[60] >= 2) {
+        const newCombination = currentCombination.filter(mg => mg !== 60);
+        const sixtyCount = counts[60] || 0;
+        const replacements = Math.floor(sixtyCount / 2);
+        for (let i = 0; i < replacements; i++) {
+            newCombination.push(120);
+        }
+        for (let i = 0; i < sixtyCount % 2; i++) {
+            newCombination.push(60);
+        }
+        return newCombination.sort((a, b) => b - a);
+    }
+    
+    return null;
+}
+
+// 获取Artesun替代方案
+function getArtesunAlternatives(currentCombination) {
+    const strengths = artesunData.strengths.map(s => s.mg).sort((a, b) => b - a);
+    const currentTotal = currentCombination.reduce((sum, mg) => sum + mg, 0);
+    const alternatives = [];
+    
+    // 生成可能的替代组合
+    for (let i = 0; i < strengths.length; i++) {
+        const altCombination = [];
+        const altStrength = strengths[i];
+        
+        // 尝试使用单一规格
+        const count = Math.ceil(currentTotal / altStrength);
+        for (let j = 0; j < count; j++) {
+            altCombination.push(altStrength);
+        }
+        
+        const altTotal = altCombination.reduce((sum, mg) => sum + mg, 0);
+        
+        // 只添加合理的替代方案（不超过当前总剂量的±10%）
+        if (altTotal >= currentTotal * 0.95 && altTotal <= currentTotal * 1.1) {
+            const strengthCounts = {};
+            altCombination.forEach(mg => {
+                strengthCounts[mg] = (strengthCounts[mg] || 0) + 1;
+            });
+            
+            alternatives.push({
+                combination: altCombination,
+                totalMg: altTotal,
+                recommendedStrengths: strengthCounts
+            });
+        }
+    }
+    
+    return alternatives;
+}
 
 // ==================== 辅助函数 ====================
 
