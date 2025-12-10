@@ -1,5 +1,5 @@
 // Medical Dosage Calculator - 主要JavaScript逻辑
-// 版本：v8.4 - 修复按钮语言切换问题
+// 版本：v8.5 - 增加D-Artepp专用刻度盘
 // 日期：2024-01-20
 
 // 全局变量
@@ -674,25 +674,44 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
 });
 
-// 初始化刻度盘 - 顺时针增大：5kg在135°，100kg在45°
+// ==================== 刻度盘功能（新增专用函数） ====================
+
+// 主刻度盘初始化函数
 function initializeScale() {
+    if (selectedProduct && selectedProduct.id === 'dartepp') {
+        initializeDarteppScale();
+    } else {
+        initializeGeneralScale();
+    }
+}
+
+// ==================== 通用刻度盘函数 ====================
+
+// 通用刻度盘初始化
+function initializeGeneralScale() {
     const scaleContainer = document.getElementById('scaleContainer');
     if (!scaleContainer) return;
     
     scaleContainer.innerHTML = '';
     
-    // 创建刻度线和数字（顺时针增大：5kg在左端135°，100kg在右端45°）
-    for (let kg = 0; kg <= 100; kg += 1) {
-        const angle = mapWeightToAngle(kg);
+    // 通用刻度范围: 0-100kg
+    const minWeight = 0;
+    const maxWeight = 100;
+    const step = 1;
+    const majorStep = 10;
+    
+    // 创建刻度线和数字
+    for (let kg = minWeight; kg <= maxWeight; kg += step) {
+        const angle = mapGeneralWeightToAngle(kg);
         
         // 创建刻度线
         const line = document.createElement('div');
-        line.className = kg % 5 === 0 ? 'scale-line major' : 'scale-line minor';
+        line.className = kg % majorStep === 0 ? 'scale-line major' : 'scale-line minor';
         line.style.transform = `translateX(-50%) rotate(${angle}deg)`;
         scaleContainer.appendChild(line);
         
-        // 创建数字标签（每5kg显示一个数字）
-        if (kg % 10 === 0) {
+        // 创建数字标签
+        if (kg % majorStep === 0) {
             const number = document.createElement('div');
             number.className = 'scale-number';
             number.textContent = kg;
@@ -700,6 +719,227 @@ function initializeScale() {
             scaleContainer.appendChild(number);
         }
     }
+}
+
+// 通用体重→角度映射
+function mapGeneralWeightToAngle(weight) {
+    // 通用: 0kg=135°，100kg=45°
+    return 0 + weight * (180 / 100);
+}
+
+// 通用角度→体重映射
+function mapAngleToGeneralWeight(angle) {
+    let weight = angle * (100 / 180);
+    weight = Math.max(0, Math.min(100, weight));
+    
+    if (weight <= 0.05) {
+        weight = 0.1;
+    }
+    
+    return weight;
+}
+
+// 通用体重设置
+function setGeneralWeight(weight) {
+    weight = parseFloat(weight);
+    if (isNaN(weight)) return;
+    
+    if (weight < 0.1) {
+        weight = 0.1;
+    } else if (weight > 100) {
+        weight = 100;
+    }
+    
+    currentWeight = weight;
+    
+    const originalAngle = mapGeneralWeightToAngle(currentWeight);
+    currentRotation = 0 - originalAngle;
+    currentRotation = Math.max(-180, Math.min(0, currentRotation));
+    
+    updateDialRotation();
+}
+
+// ==================== D-ARTEPP专用刻度盘函数 ====================
+
+// D-Artepp专用刻度盘初始化
+function initializeDarteppScale() {
+    const scaleContainer = document.getElementById('scaleContainer');
+    if (!scaleContainer) return;
+    
+    scaleContainer.innerHTML = '';
+    
+    // D-Artepp刻度范围: 5-100kg
+    const minWeight = 5;
+    const maxWeight = 100;
+    const step = 1;
+    const majorStep = 5;
+    
+    // 创建刻度线和数字
+    for (let kg = minWeight; kg <= maxWeight; kg += step) {
+        const angle = mapDarteppWeightToAngle(kg);
+        
+        // 创建刻度线
+        const line = document.createElement('div');
+        line.className = kg % majorStep === 0 ? 'scale-line major' : 'scale-line minor';
+        line.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+        scaleContainer.appendChild(line);
+        
+        // 创建数字标签
+        if (kg % (2*majorStep) === 0 || kg === majorStep) {
+            const number = document.createElement('div');
+            number.className = 'scale-number';
+            number.textContent = kg;
+            number.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+            scaleContainer.appendChild(number);
+        }
+    }
+}
+
+// D-Artepp专用体重→角度映射
+function mapDarteppWeightToAngle(weight) {
+    // D-Artepp: 5kg=135°，100kg=45°
+    return 0 + (weight) * (171 / 95);
+}
+
+// D-Artepp专用角度→体重映射
+function mapAngleToDarteppWeight(angle) {
+    let weight = angle * (95 / 171);
+    weight = Math.max(5, Math.min(100, weight));
+    
+    return weight;
+}
+
+// D-Artepp专用体重设置
+function setDarteppWeight(weight) {
+    weight = parseFloat(weight);
+    if (isNaN(weight)) return;
+    
+    if (weight < 5) {
+        weight = 5;
+    } else if (weight > 100) {
+        weight = 100;
+    }
+    
+    currentWeight = weight;
+    
+    const originalAngle = mapDarteppWeightToAngle(currentWeight);
+    currentRotation = 0 - originalAngle;
+    currentRotation = Math.max(-180, Math.min(-9, currentRotation));
+    
+    updateDialRotation();
+}
+
+// D-Artepp专用快速选择按钮设置
+function setupDarteppQuickSelectButtons() {
+    // 隐藏小于5kg的按钮
+    document.querySelectorAll('.quick-select-button').forEach(button => {
+        const weight = parseInt(button.getAttribute('data-weight') || button.textContent.replace('kg', '').trim());
+        if (weight < 5) {
+            button.style.display = 'none';
+        } else {
+            button.style.display = 'inline-flex';
+        }
+    });
+    
+    // 确保5kg按钮存在
+    const quickSelectContainer = document.querySelector('.quick-select-buttons');
+    if (quickSelectContainer) {
+        const existingWeights = Array.from(quickSelectContainer.querySelectorAll('.quick-select-button'))
+            .map(btn => parseInt(btn.getAttribute('data-weight') || btn.textContent.replace('kg', '').trim()));
+        
+        if (!existingWeights.includes(5)) {
+            const button = document.createElement('button');
+            button.className = 'quick-select-button bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg transition-colors';
+            button.setAttribute('data-weight', '5');
+            button.textContent = '5kg';
+            button.onclick = function() { setWeight(5); };
+            quickSelectContainer.insertBefore(button, quickSelectContainer.firstChild);
+        }
+    }
+}
+
+// 恢复通用快速选择按钮
+function setupGeneralQuickSelectButtons() {
+    document.querySelectorAll('.quick-select-button').forEach(button => {
+        button.style.display = 'inline-flex';
+    });
+}
+
+// ==================== 拖拽处理函数 ====================
+
+// D-Artepp专用拖拽处理
+function handleDarteppDialDrag(e, isTouch = false) {
+    if (!isDragging) return;
+    
+    const semicircleDial = document.getElementById('semicircleDial');
+    const rect = semicircleDial.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    let clientX, clientY;
+    if (isTouch) {
+        const touch = e.touches[0];
+        clientX = touch.clientX;
+        clientY = touch.clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+    
+    const currentAngle = Math.atan2(clientY - centerY, clientX - centerX) * 180 / Math.PI;
+    const deltaAngle = currentAngle - startAngle;
+    
+    currentRotation += deltaAngle * 0.5;
+    currentRotation = Math.max(-180, Math.min(-9, currentRotation));
+    
+    semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
+    
+    const originalAngle = 0 - currentRotation;
+    let calculatedWeight = mapAngleToDarteppWeight(originalAngle);
+    
+    
+    currentWeight = calculatedWeight;
+    startAngle = currentAngle;
+    updateWeightDisplay();
+}
+
+// 通用拖拽处理
+function handleGeneralDialDrag(e, isTouch = false) {
+    if (!isDragging) return;
+    
+    const semicircleDial = document.getElementById('semicircleDial');
+    const rect = semicircleDial.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    let clientX, clientY;
+    if (isTouch) {
+        const touch = e.touches[0];
+        clientX = touch.clientX;
+        clientY = touch.clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+    
+    const currentAngle = Math.atan2(clientY - centerY, clientX - centerX) * 180 / Math.PI;
+    const deltaAngle = currentAngle - startAngle;
+    
+    currentRotation += deltaAngle * 0.5;
+    currentRotation = Math.max(-180, Math.min(0, currentRotation));
+    
+    semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
+    
+    const originalAngle = 0 - currentRotation;
+    let calculatedWeight = mapAngleToGeneralWeight(originalAngle);
+    
+    if (calculatedWeight <= 0.05) {
+        calculatedWeight = 0.1;
+    }
+    
+    currentWeight = calculatedWeight;
+    startAngle = currentAngle;
+    updateWeightDisplay();
 }
 
 // ==================== 工具函数 ====================
@@ -731,7 +971,13 @@ function updateDialRotation() {
     
     // 旋转后，指针指向的刻度原始角度 = 90° - currentRotation
     const originalAngle = 0 - currentRotation;
-    currentWeight = mapAngleToWeight(originalAngle);
+    
+    // 根据产品选择对应的映射函数
+    if (selectedProduct && selectedProduct.id === 'dartepp') {
+        currentWeight = mapAngleToDarteppWeight(originalAngle);
+    } else {
+        currentWeight = mapAngleToGeneralWeight(originalAngle);
+    }
     
     // 更新显示
     updateWeightDisplay();
@@ -742,12 +988,31 @@ function updateWeightDisplay() {
     const currentWeightDisplay = document.getElementById('currentWeight');
     const manualWeightInput = document.getElementById('manualWeight');
     
+    // 检查体重是否在有效范围内
+    if (selectedProduct && selectedProduct.id === 'dartepp') {
+        if (currentWeight < 5) {
+            currentWeight = 5;
+            const originalAngle = mapDarteppWeightToAngle(currentWeight);
+            currentRotation = 0 - originalAngle;
+            updateDialRotation();
+        }
+    } else {
+        if (currentWeight < 0.1) {
+            currentWeight = 0.1;
+            const originalAngle = mapGeneralWeightToAngle(currentWeight);
+            currentRotation = 0 - originalAngle;
+            updateDialRotation();
+        }
+    }
+    
     if (currentWeightDisplay) {
         currentWeightDisplay.textContent = currentWeight.toFixed(1);
     }
     
     if (manualWeightInput) {
         manualWeightInput.value = currentWeight.toFixed(1);
+        // 设置最小输入值
+        manualWeightInput.min = selectedProduct?.id === 'dartepp' ? '5' : '0.1';
     }
     
     // 如果已选择产品，自动更新剂量显示
@@ -761,22 +1026,12 @@ function setWeight(weight) {
     weight = parseFloat(weight);
     if (isNaN(weight)) return;
     
-    // 如果体重为0或接近0，自动设为0.1kg
-    if (weight <= 0.05) {
-        weight = 0.1;
+    // 根据产品选择对应的设置函数
+    if (selectedProduct && selectedProduct.id === 'dartepp') {
+        setDarteppWeight(weight);
+    } else {
+        setGeneralWeight(weight);
     }
-    
-    currentWeight = Math.max(0.1, Math.min(100, weight)); // 最小值设为0.1
-    
-    // 旋转角度 = 0° - 体重的原始角度
-    const originalAngle = mapWeightToAngle(currentWeight);
-    currentRotation = 0 - originalAngle;
-    
-    // 限制旋转范围
-    currentRotation = Math.max(-180, Math.min(0, currentRotation));
-    
-    // 更新刻度盘
-    updateDialRotation();
 }
 
 // ==================== 事件处理 ====================
@@ -861,59 +1116,19 @@ function setupDialEvents() {
         const centerY = rect.top + rect.height / 2;
         startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
         document.body.style.cursor = 'grabbing';
-        
-        // 拖拽时禁用过渡效果
         this.style.transition = 'none';
     });
     
     document.addEventListener('mousemove', function(e) {
         if (!isDragging) return;
         
-        const semicircleDial = document.getElementById('semicircleDial');
-        const rect = semicircleDial.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
-        const deltaAngle = currentAngle - startAngle;
-        
-        // 更新旋转角度
-        currentRotation += deltaAngle * 0.5;
-        currentRotation = Math.max(-180, Math.min(0, currentRotation));
-        
-        // 立即应用旋转
-        semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
-        
-        // 从旋转角度计算体重
-        const originalAngle = 0 - currentRotation;
-        let calculatedWeight = mapAngleToWeight(originalAngle);
-        
-        // 确保体重不低于0.1kg
-        if (calculatedWeight <= 0.05) {
-            calculatedWeight = 0.1;
-        }
-        
-        // 更新当前体重
-        currentWeight = calculatedWeight;
-        
-        startAngle = currentAngle;
-        
-        // 更新显示
-        const currentWeightDisplay = document.getElementById('currentWeight');
-        const manualWeightInput = document.getElementById('manualWeight');
-        
-        if (currentWeightDisplay) {
-            currentWeightDisplay.textContent = currentWeight.toFixed(1);
-        }
-        
-        if (manualWeightInput) {
-            manualWeightInput.value = currentWeight.toFixed(1);
-        }
-        
-        if (selectedProduct) {
-            updateDosageDisplay();
+        if (selectedProduct && selectedProduct.id === 'dartepp') {
+            handleDarteppDialDrag(e, false);
+        } else {
+            handleGeneralDialDrag(e, false);
         }
     });
-
+    
     document.addEventListener('mouseup', function() {
         if (!isDragging) return;
         
@@ -925,9 +1140,15 @@ function setupDialEvents() {
             semicircleDial.style.transition = 'transform 0.2s ease';
         }
         
-        // 鼠标释放时再次检查体重是否为0
-        if (currentWeight <= 0.05) {
-            setWeight(0.1);
+        // 检查体重最小值
+        if (selectedProduct && selectedProduct.id === 'dartepp') {
+            if (currentWeight <= 5) {
+                setWeight(5);
+            }
+        } else {
+            if (currentWeight <= 0.05) {
+                setWeight(0.1);
+            }
         }
     });
 
@@ -939,8 +1160,6 @@ function setupDialEvents() {
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
         startAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * 180 / Math.PI;
-        
-        // 拖拽时禁用过渡效果
         this.style.transition = 'none';
     });
 
@@ -948,48 +1167,10 @@ function setupDialEvents() {
         if (!isDragging) return;
         e.preventDefault();
         
-        const touch = e.touches[0];
-        const semicircleDial = document.getElementById('semicircleDial');
-        const rect = semicircleDial.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const currentAngle = Math.atan2(touch.clientY - centerY, touch.clientX - centerX) * 180 / Math.PI;
-        const deltaAngle = currentAngle - startAngle;
-        
-        currentRotation += deltaAngle * 0.5;
-        currentRotation = Math.max(-180, Math.min(0, currentRotation));
-        
-        // 立即应用旋转
-        semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
-        
-        // 从旋转角度计算体重
-        const originalAngle = 0 - currentRotation;
-        let calculatedWeight = mapAngleToWeight(originalAngle);
-        
-        // 确保体重不低于0.1kg
-        if (calculatedWeight <= 0.05) {
-            calculatedWeight = 0.1;
-        }
-        
-        // 更新当前体重
-        currentWeight = calculatedWeight;
-        
-        startAngle = currentAngle;
-        
-        // 更新显示
-        const currentWeightDisplay = document.getElementById('currentWeight');
-        const manualWeightInput = document.getElementById('manualWeight');
-        
-        if (currentWeightDisplay) {
-            currentWeightDisplay.textContent = currentWeight.toFixed(1);
-        }
-        
-        if (manualWeightInput) {
-            manualWeightInput.value = currentWeight.toFixed(1);
-        }
-        
-        if (selectedProduct) {
-            updateDosageDisplay();
+        if (selectedProduct && selectedProduct.id === 'dartepp') {
+            handleDarteppDialDrag(e, true);
+        } else {
+            handleGeneralDialDrag(e, true);
         }
     });
 
@@ -1002,19 +1183,15 @@ function setupDialEvents() {
             semicircleDial.style.transition = 'transform 0.2s ease';
         }
         
-        // 触摸结束时再次检查体重是否为0
-        if (currentWeight <= 0.05) {
-            setWeight(0.1);
-        }
-    });
-    
-    document.addEventListener('touchend', function() {
-        if (!isDragging) return;
-        
-        isDragging = false;
-        const semicircleDial = document.getElementById('semicircleDial');
-        if (semicircleDial) {
-            semicircleDial.style.transition = 'transform 0.2s ease';
+        // 检查体重最小值
+        if (selectedProduct && selectedProduct.id === 'dartepp') {
+            if (currentWeight <= 5) {
+                setWeight(5);
+            }
+        } else {
+            if (currentWeight <= 0.05) {
+                setWeight(0.1);
+            }
         }
     });
 }
@@ -1025,17 +1202,17 @@ function handleManualWeightInput(event) {
     const weight = parseFloat(input.value);
     
     if (!isNaN(weight)) {
-        // 如果输入0或负数，设为0.1
-        if (weight <= 0) {
-            setWeight(0.1);
-        } else if (weight >= 0 && weight <= 100) {
+        // 根据产品设置最小值
+        const minWeight = selectedProduct?.id === 'dartepp' ? 5 : 0.1;
+        
+        if (weight < minWeight) {
+            setWeight(minWeight);
+        } else if (weight >= minWeight && weight <= 100) {
             setWeight(weight);
         } else {
-            // 输入无效，恢复之前的值
             input.value = currentWeight.toFixed(1);
         }
     } else {
-        // 输入无效，恢复之前的值
         input.value = currentWeight.toFixed(1);
     }
 }
@@ -1047,21 +1224,19 @@ function handleManualWeightKeyDown(event) {
         const weight = parseFloat(input.value);
         
         if (!isNaN(weight)) {
-            // 如果输入0或负数，设为0.1
-            if (weight <= 0) {
-                setWeight(0.1);
-            } else if (weight >= 0 && weight <= 100) {
+            const minWeight = selectedProduct?.id === 'dartepp' ? 5 : 0.1;
+            
+            if (weight < minWeight) {
+                setWeight(minWeight);
+            } else if (weight >= minWeight && weight <= 100) {
                 setWeight(weight);
             } else {
-                // 输入无效，恢复之前的值
                 input.value = currentWeight.toFixed(1);
             }
         } else {
-            // 输入无效，恢复之前的值
             input.value = currentWeight.toFixed(1);
         }
         
-        // 失去焦点
         input.blur();
     }
 }
@@ -1089,11 +1264,17 @@ function showCalculatorInterface() {
         productSelection.classList.add('hidden');
         calculatorInterface.classList.remove('hidden');
         
-        // 初始化刻度盘
+        // 初始化对应的刻度盘
         initializeScale();
         
         // 设置初始体重
-        setWeight(35);
+        if (selectedProduct.id === 'dartepp') {
+            setWeight(35); // D-Artepp最小5kg，35kg是安全的初始值
+            setupDarteppQuickSelectButtons();
+        } else {
+            setWeight(35); // 其他产品从0开始
+            setupGeneralQuickSelectButtons();
+        }
         
         // 更新计算器标题和描述
         updateCalculatorTitleAndDesc();
@@ -1188,13 +1369,17 @@ function showSelectWeightPrompt(container) {
 
 // 显示体重超出范围错误
 function showWeightOutOfRangeError(container) {
+    // 根据产品显示不同的范围提示
+    const rangeText = selectedProduct?.id === 'dartepp' ? 
+        '5-100kg' : '0-100kg';
+    
     container.innerHTML = `
         <div class="text-center text-red-500 py-8">
             <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
             </svg>
             <p class="font-medium">${translations[currentLanguage].weightOutOfRange || 'Weight out of range'}</p>
-            <p class="text-sm">${translations[currentLanguage].checkWeight || 'Please check if weight input is correct (5-100kg)'}</p>
+            <p class="text-sm">${translations[currentLanguage].checkWeight || 'Please check if weight input is correct'} (${rangeText})</p>
         </div>
     `;
 }
@@ -1207,6 +1392,13 @@ function updateDosageDisplay() {
     // 如果没有选择产品，显示默认提示
     if (!selectedProduct) {
         showSelectWeightPrompt(dosageResult);
+        return;
+    }
+    
+    // 检查体重是否在有效范围内
+    const minWeight = selectedProduct.id === 'dartepp' ? 5 : 0;
+    if (currentWeight < minWeight || currentWeight > 100) {
+        showWeightOutOfRangeError(dosageResult);
         return;
     }
     
@@ -1664,7 +1856,7 @@ function displayArtesunResult(container) {
 
 // 查找D-Artepp剂量推荐
 function findDosageRecommendation(weight) {
-    if (weight < 0 || weight > 100) return null;
+    if (weight < 5 || weight > 100) return null;
     
     const dosages = [];
     

@@ -250,6 +250,12 @@
             color: #0284c7;
         }
         
+        /* D-Artepp模式下隐藏小于10kg的按钮 */
+        .dartepp-mode .quick-select-button[onclick*="setWeight(10)"],
+        .dartepp-mode .quick-select-button[data-weight="10"] {
+            display: none !important;
+        }
+        
         /* 移动端优化 */
         @media (max-width: 768px) {
             .semicircle-container {
@@ -337,6 +343,36 @@
         
         .pulse-glow {
             animation: pulse-glow 2s infinite;
+        }
+        
+        /* 体重警告样式 */
+        .weight-warning {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .weight-warning p {
+            color: #991b1b;
+            font-size: 13px;
+            font-weight: 500;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .weight-warning svg {
+            color: #dc2626;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -495,22 +531,31 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="manualInput">Or enter weight manually</label>
                         <div class="flex items-center justify-center space-x-2">
                             <input type="number" id="manualWeight" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 number-display text-center" 
-                                   value="35" min="0" max="100" step="0.1">
+                                   value="35" min="0.1" max="100" step="0.1">
                             <span class="text-gray-600">kg</span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1" data-i18n="weightRange">Range: 0-100kg</p>
+                        <p class="text-xs text-gray-500 mt-1" id="weightRangeHint" data-i18n="weightRange">Range: 0-100kg</p>
+                        <!-- 体重警告区域 -->
+                        <div id="weightWarning" class="hidden weight-warning mt-3">
+                            <p>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <span id="warningMessage">Weight must be at least 5kg for D-Artepp</span>
+                            </p>
+                        </div>
                     </div>
                     
-                    <!-- 快速选择按钮 -->
+                    <!-- 快速选择按钮（恢复原样） -->
                     <div class="grid grid-cols-4 gap-2">
-                        <button onclick="setWeight(10)" class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">10kg</button>
-                        <button onclick="setWeight(20)" class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">20kg</button>
-                        <button onclick="setWeight(30)" class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">30kg</button>
-                        <button onclick="setWeight(40)" class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">40kg</button>
-                        <button onclick="setWeight(50)" class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">50kg</button>
-                        <button onclick="setWeight(60)" class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">60kg</button>
-                        <button onclick="setWeight(70)" class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">70kg</button>
-                        <button onclick="setWeight(80)" class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">80kg</button>
+                        <button onclick="setWeight(10)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">10kg</button>
+                        <button onclick="setWeight(20)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">20kg</button>
+                        <button onclick="setWeight(30)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">30kg</button>
+                        <button onclick="setWeight(40)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">40kg</button>
+                        <button onclick="setWeight(50)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">50kg</button>
+                        <button onclick="setWeight(60)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">60kg</button>
+                        <button onclick="setWeight(70)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">70kg</button>
+                        <button onclick="setWeight(80)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">80kg</button>
                     </div>
                 </div>
                 
@@ -551,5 +596,34 @@
         </div>
     </footer>
     <script src="main.js"></script>
+    <script>
+        // 初始化快速选择按钮点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为所有快速选择按钮添加点击事件
+            document.querySelectorAll('.quick-select-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const weightText = this.textContent.replace('kg', '').trim();
+                    const weight = parseInt(weightText);
+                    if (!isNaN(weight)) {
+                        setWeight(weight);
+                    }
+                });
+            });
+            
+            // 为手动输入框添加实时验证
+            const manualInput = document.getElementById('manualWeight');
+            if (manualInput) {
+                manualInput.addEventListener('input', function() {
+                    const value = parseFloat(this.value);
+                    const min = this.min ? parseFloat(this.min) : 0.1;
+                    
+                    if (value < min) {
+                        this.value = min;
+                        setWeight(min);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
