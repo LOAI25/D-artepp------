@@ -37,7 +37,7 @@ const translations = {
         // 通用
         weightSelector: "Weight Selector",
         manualInput: "Or enter weight manually",
-        weightRange: "Range: 5-100kg",
+        weightRange: "Range: 0-100kg",
         dosagePlan: "Recommended Dosage Plan",
         selectWeight: "Please select weight",
         selectWeightDesc: "Slide the dial on the left to set patient weight",
@@ -62,7 +62,7 @@ const translations = {
         forDays: "for 3 days",
         pleaseFollow: "Please strictly follow medical advice. Seek medical attention immediately if adverse reactions occur.",
         weightOutOfRange: "Weight out of range",
-        checkWeight: "Please check if weight input is correct (5-100kg)",
+        checkWeight: "Please check if weight input is correct (0-100kg)",
         selectProductAlert: "Please select a product first",
         // 注射途径选择
         injectionRoute: "Injection Route",
@@ -134,7 +134,7 @@ const translations = {
         // 通用
         weightSelector: "体重选择器",
         manualInput: "或直接输入体重",
-        weightRange: "范围: 5-100kg",
+        weightRange: "范围: 0-100kg",
         dosagePlan: "推荐剂量方案",
         selectWeight: "请选择体重",
         selectWeightDesc: "滑动左侧刻度盘来设置患者体重",
@@ -159,7 +159,7 @@ const translations = {
         forDays: "连续3日",
         pleaseFollow: "请严格遵医嘱使用，如出现不良反应请及时就医。",
         weightOutOfRange: "体重超出范围",
-        checkWeight: "请检查体重输入是否正确 (5-100kg)",
+        checkWeight: "请检查体重输入是否正确 (0-100kg)",
         selectProductAlert: "请先选择产品",
         // 注射途径选择
         injectionRoute: "注射途径",
@@ -231,7 +231,7 @@ const translations = {
         // 通用
         weightSelector: "Sélecteur de Poids",
         manualInput: "Ou saisir manuellement le poids",
-        weightRange: "Plage: 5-100kg",
+        weightRange: "Plage: 0-100kg",
         dosagePlan: "Plan de Dosage Recommandé",
         selectWeight: "Veuillez sélectionner le poids",
         selectWeightDesc: "Faites glisser le cadran à gauche pour définir le poids du patient",
@@ -256,7 +256,7 @@ const translations = {
         forDays: "pendant 3 jours",
         pleaseFollow: "Veuillez suivre strictement les conseils médicaux. Consultez immédiatement un médecin en cas de réactions indésirables.",
         weightOutOfRange: "Poids hors limites",
-        checkWeight: "Veuillez vérifier si la saisie du poids est correcte (5-100kg)",
+        checkWeight: "Veuillez vérifier si la saisie du poids est correcte (0-100kg)",
         selectProductAlert: "Veuillez d'abord sélectionner un produit",
         // 注射途径选择
         injectionRoute: "Voie d'Injection",
@@ -682,7 +682,7 @@ function initializeScale() {
     scaleContainer.innerHTML = '';
     
     // 创建刻度线和数字（顺时针增大：5kg在左端135°，100kg在右端45°）
-    for (let kg = 5; kg <= 100; kg += 1) {
+    for (let kg = 0; kg <= 100; kg += 1) {
         const angle = mapWeightToAngle(kg);
         
         // 创建刻度线
@@ -692,7 +692,7 @@ function initializeScale() {
         scaleContainer.appendChild(line);
         
         // 创建数字标签（每5kg显示一个数字）
-        if (kg % 10 === 0 || kg === 5) {
+        if (kg % 10 === 0) {
             const number = document.createElement('div');
             number.className = 'scale-number';
             number.textContent = kg;
@@ -706,13 +706,20 @@ function initializeScale() {
 
 // 体重→角度：5kg=135°，100kg=45°，顺时针增大
 function mapWeightToAngle(weight) {
-    return 0 + (weight) * (171 / 95);
+    return 0 + (weight) * (180/ 100);
 }
 
-// 角度→体重：135°=5kg，45°=100kg，顺时针增大
+// 角度→体重：0°=0kg，180°=100kg，顺时针增大
 function mapAngleToWeight(angle) {
-    const weight = (angle - 0) * (95 / 171);
-    return Math.max(5, Math.min(100, weight));
+    const weight = angle * (100 / 180);
+    let result = Math.max(0, Math.min(100, weight));
+    
+    // 如果计算出的体重为0或接近0，设为0.1
+    if (result <= 0.05) {
+        result = 0.1;
+    }
+    
+    return result;
 }
 
 // 更新刻度盘旋转
@@ -754,14 +761,19 @@ function setWeight(weight) {
     weight = parseFloat(weight);
     if (isNaN(weight)) return;
     
-    currentWeight = Math.max(5, Math.min(100, weight));
+    // 如果体重为0或接近0，自动设为0.1kg
+    if (weight <= 0.05) {
+        weight = 0.1;
+    }
     
-    // 旋转角度 = 90° - 体重的原始角度
+    currentWeight = Math.max(0.1, Math.min(100, weight)); // 最小值设为0.1
+    
+    // 旋转角度 = 0° - 体重的原始角度
     const originalAngle = mapWeightToAngle(currentWeight);
     currentRotation = 0 - originalAngle;
     
     // 限制旋转范围
-    currentRotation = Math.max(-180, Math.min(-9, currentRotation));
+    currentRotation = Math.max(-180, Math.min(0, currentRotation));
     
     // 更新刻度盘
     updateDialRotation();
@@ -866,14 +878,22 @@ function setupDialEvents() {
         
         // 更新旋转角度
         currentRotation += deltaAngle * 0.5;
-        currentRotation = Math.max(-180, Math.min(-9, currentRotation));
+        currentRotation = Math.max(-180, Math.min(0, currentRotation));
         
         // 立即应用旋转
         semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
         
         // 从旋转角度计算体重
         const originalAngle = 0 - currentRotation;
-        currentWeight = mapAngleToWeight(originalAngle);
+        let calculatedWeight = mapAngleToWeight(originalAngle);
+        
+        // 确保体重不低于0.1kg
+        if (calculatedWeight <= 0.05) {
+            calculatedWeight = 0.1;
+        }
+        
+        // 更新当前体重
+        currentWeight = calculatedWeight;
         
         startAngle = currentAngle;
         
@@ -893,7 +913,7 @@ function setupDialEvents() {
             updateDosageDisplay();
         }
     });
-    
+
     document.addEventListener('mouseup', function() {
         if (!isDragging) return;
         
@@ -904,8 +924,13 @@ function setupDialEvents() {
         if (semicircleDial) {
             semicircleDial.style.transition = 'transform 0.2s ease';
         }
+        
+        // 鼠标释放时再次检查体重是否为0
+        if (currentWeight <= 0.05) {
+            setWeight(0.1);
+        }
     });
-    
+
     // 触摸事件
     semicircleDial.addEventListener('touchstart', function(e) {
         isDragging = true;
@@ -918,7 +943,7 @@ function setupDialEvents() {
         // 拖拽时禁用过渡效果
         this.style.transition = 'none';
     });
-    
+
     document.addEventListener('touchmove', function(e) {
         if (!isDragging) return;
         e.preventDefault();
@@ -932,14 +957,22 @@ function setupDialEvents() {
         const deltaAngle = currentAngle - startAngle;
         
         currentRotation += deltaAngle * 0.5;
-        currentRotation = Math.max(-180, Math.min(-9, currentRotation));
+        currentRotation = Math.max(-180, Math.min(0, currentRotation));
         
         // 立即应用旋转
         semicircleDial.style.transform = `rotate(${currentRotation}deg)`;
         
         // 从旋转角度计算体重
         const originalAngle = 0 - currentRotation;
-        currentWeight = mapAngleToWeight(originalAngle);
+        let calculatedWeight = mapAngleToWeight(originalAngle);
+        
+        // 确保体重不低于0.1kg
+        if (calculatedWeight <= 0.05) {
+            calculatedWeight = 0.1;
+        }
+        
+        // 更新当前体重
+        currentWeight = calculatedWeight;
         
         startAngle = currentAngle;
         
@@ -957,6 +990,21 @@ function setupDialEvents() {
         
         if (selectedProduct) {
             updateDosageDisplay();
+        }
+    });
+
+    document.addEventListener('touchend', function() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        const semicircleDial = document.getElementById('semicircleDial');
+        if (semicircleDial) {
+            semicircleDial.style.transition = 'transform 0.2s ease';
+        }
+        
+        // 触摸结束时再次检查体重是否为0
+        if (currentWeight <= 0.05) {
+            setWeight(0.1);
         }
     });
     
@@ -976,8 +1024,16 @@ function handleManualWeightInput(event) {
     const input = event.target;
     const weight = parseFloat(input.value);
     
-    if (!isNaN(weight) && weight >= 5 && weight <= 100) {
-        setWeight(weight);
+    if (!isNaN(weight)) {
+        // 如果输入0或负数，设为0.1
+        if (weight <= 0) {
+            setWeight(0.1);
+        } else if (weight >= 0 && weight <= 100) {
+            setWeight(weight);
+        } else {
+            // 输入无效，恢复之前的值
+            input.value = currentWeight.toFixed(1);
+        }
     } else {
         // 输入无效，恢复之前的值
         input.value = currentWeight.toFixed(1);
@@ -990,8 +1046,16 @@ function handleManualWeightKeyDown(event) {
         const input = event.target;
         const weight = parseFloat(input.value);
         
-        if (!isNaN(weight) && weight >= 5 && weight <= 100) {
-            setWeight(weight);
+        if (!isNaN(weight)) {
+            // 如果输入0或负数，设为0.1
+            if (weight <= 0) {
+                setWeight(0.1);
+            } else if (weight >= 0 && weight <= 100) {
+                setWeight(weight);
+            } else {
+                // 输入无效，恢复之前的值
+                input.value = currentWeight.toFixed(1);
+            }
         } else {
             // 输入无效，恢复之前的值
             input.value = currentWeight.toFixed(1);
@@ -1600,7 +1664,7 @@ function displayArtesunResult(container) {
 
 // 查找D-Artepp剂量推荐
 function findDosageRecommendation(weight) {
-    if (weight < 5 || weight > 100) return null;
+    if (weight < 0 || weight > 100) return null;
     
     const dosages = [];
     
@@ -1644,7 +1708,7 @@ function findDosageRecommendation(weight) {
 
 // 查找Argesun剂量推荐 - 智能选择最佳规格组合
 function findArgesunDosage(weight) {
-    if (weight < 5 || weight > 100) return null;
+    if (weight < 0 || weight > 100) return null;
     
     // 计算总剂量 (mg)
     const dosagePerKg = weight < 20 ? argesunData.dosageFormula.child : argesunData.dosageFormula.adult;
@@ -1827,7 +1891,7 @@ function getArgesunAlternatives(currentCombination) {
 
 // 查找Artesun剂量推荐 - 智能选择最佳规格组合
 function findArtesunDosage(weight) {
-    if (weight < 5 || weight > 100) return null;
+    if (weight < 0 || weight > 100) return null;
     
     // 计算总剂量 (mg)
     const dosagePerKg = weight < 20 ? artesunData.dosageFormula.child : artesunData.dosageFormula.adult;
