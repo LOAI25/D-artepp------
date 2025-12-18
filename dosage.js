@@ -1,5 +1,5 @@
 // dosage.js - 剂量计算模块
-// 版本：v8.7
+// 版本：v8.8 - 修正：Recommended中只显示最优方案，其他放Alternatives
 
 // 使用函数获取器而不是直接变量
 let getCurrentWeight, getSelectedProduct, getInjectionRoute, getCurrentLanguage;
@@ -86,44 +86,205 @@ export function findDosageRecommendation(weight) {
     if (!selectedProduct || selectedProduct.id !== 'dartepp') return null;
     if (weight < 5 || weight > 100) return null;
     
-    const dosages = [];
+    let bestOption = null; // 最优方案（片数最少，优先普通片）
+    const allOptions = []; // 所有可行方案
+    const alternatives = []; // 备选方案
     
-    // 检查 D-ARTEPP Dispersible
-    const dispersible = selectedProduct.types[0];
-    for (const spec of dispersible.specifications) {
-        for (const range of spec.weightRanges) {
-            if (weight >= range.min && weight < range.max) {
-                dosages.push({
-                    type: dispersible.name,
-                    specification: spec.dosage,
-                    count: range.count
-                });
-                break;
-            }
-        }
-    }
-    
-    // 检查 D-ARTEPP
+    // 优先检查 D-ARTEPP（普通片） - 因为我们希望优先显示普通片
     const regular = selectedProduct.types[1];
     for (const spec of regular.specifications) {
         for (const range of spec.weightRanges) {
             if (weight >= range.min && weight < range.max) {
-                dosages.push({
+                const option = {
                     type: regular.name,
                     specification: spec.dosage,
-                    count: range.count
-                });
+                    count: range.count,
+                    isTablet: true, // 标记为普通片
+                    tabletCount: range.count // 用于排序
+                };
+                allOptions.push(option);
                 break;
             }
         }
     }
     
-    if (dosages.length === 0) return null;
+    // 检查 D-ARTEPP Dispersible（分散片）
+    const dispersible = selectedProduct.types[0];
+    for (const spec of dispersible.specifications) {
+        for (const range of spec.weightRanges) {
+            if (weight >= range.min && weight < range.max) {
+                const option = {
+                    type: dispersible.name,
+                    specification: spec.dosage,
+                    count: range.count,
+                    isTablet: false, // 标记为分散片
+                    tabletCount: range.count // 用于排序
+                };
+                allOptions.push(option);
+                break;
+            }
+        }
+    }
+    
+    if (allOptions.length === 0) return null;
+    
+    // 排序规则：1. 优先普通片 2. 片数最少
+    allOptions.sort((a, b) => {
+        // 优先普通片
+        if (a.isTablet && !b.isTablet) return -1;
+        if (!a.isTablet && b.isTablet) return 1;
+        // 都是普通片或都是分散片，按片数排序
+        return a.tabletCount - b.tabletCount;
+    });
+    
+    // 最优方案是排序后的第一个
+    bestOption = allOptions[0];
+    
+    // 其他方案作为备选
+    const otherOptions = allOptions.slice(1);
+    
+    // 根据体重区间生成额外的备选方案（基于官方表格）
+    generateWeightBasedAlternatives(weight, alternatives);
     
     return {
         weight: weight,
-        dosages: dosages
+        bestOption: bestOption,
+        alternatives: [...otherOptions.map(opt => ({...opt, fromData: true})), ...alternatives]
     };
+}
+
+// 根据体重区间生成额外的备选方案
+function generateWeightBasedAlternatives(weight, alternatives) {
+    if (weight >= 25 && weight < 36) {
+        // 25-36kg的备选方案
+        alternatives.push({
+            type: { en: 'D-ARTEPP', zh: 'D-ARTEPP 普通片', fr: 'D-ARTEPP Comprimé' },
+            specification: '40mg/240mg',
+            count: 2,
+            description: { 
+                en: 'Two 40 mg / 320 mg tablets per day for 3 days', 
+                zh: '每日2片40mg普通片，连续3日',
+                fr: 'Deux comprimés de 40 mg / 320 mg par jour pendant 3 jours'
+            }
+        });
+        alternatives.push({
+            type: { en: 'D-ARTEPP Dispersible', zh: 'D-ARTEPP 分散片', fr: 'D-ARTEPP Dispersible' },
+            specification: '20mg/120mg',
+            count: 4,
+            description: { 
+                en: 'Four 20 mg / 160 mg tablets per day for 3 days', 
+                zh: '每日4片20mg分散片，连续3日',
+                fr: 'Quatre comprimés dispersibles de 20 mg / 160 mg par jour pendant 3 jours'
+            }
+        });
+    } else if (weight >= 36 && weight < 60) {
+        // 36-60kg的备选方案
+        alternatives.push({
+            type: { en: 'D-ARTEPP', zh: 'D-ARTEPP 普通片', fr: 'D-ARTEPP Comprimé' },
+            specification: '60mg/360mg',
+            count: 2,
+            description: { 
+                en: 'Two 60 mg / 480 mg tablets per day for 3 days', 
+                zh: '每日2片60mg普通片，连续3日',
+                fr: 'Deux comprimés de 60 mg / 480 mg par jour pendant 3 jours'
+            }
+        });
+        alternatives.push({
+            type: { en: 'D-ARTEPP', zh: 'D-ARTEPP 普通片', fr: 'D-ARTEPP Comprimé' },
+            specification: '80mg/480mg',
+            count: 1.5,
+            description: { 
+                en: 'One and half 80 mg / 640 mg tablets per day for 3 days', 
+                zh: '每日1.5片80mg普通片，连续3日',
+                fr: 'Un et demi comprimés de 80 mg / 640 mg par jour pendant 3 jours'
+            }
+        });
+        alternatives.push({
+            type: { en: 'D-ARTEPP Dispersible', zh: 'D-ARTEPP 分散片', fr: 'D-ARTEPP Dispersible' },
+            specification: '30mg/180mg',
+            count: 4,
+            description: { 
+                en: 'Four 30 mg / 240 mg tablets per day for 3 days', 
+                zh: '每日4片30mg分散片，连续3日',
+                fr: 'Quatre comprimés dispersibles de 30 mg / 240 mg par jour pendant 3 jours'
+            }
+        });
+        alternatives.push({
+            type: { en: 'D-ARTEPP Dispersible', zh: 'D-ARTEPP 分散片', fr: 'D-ARTEPP Dispersible' },
+            specification: '40mg/240mg',
+            count: 3,
+            description: { 
+                en: 'Three 40 mg / 320 mg tablets per day for 3 days', 
+                zh: '每日3片40mg分散片，连续3日',
+                fr: 'Trois comprimés dispersibles de 40 mg / 320 mg par jour pendant 3 jours'
+            }
+        });
+    } else if (weight >= 60 && weight < 80) {
+        // 60-80kg的备选方案
+        alternatives.push({
+            type: { en: 'D-ARTEPP', zh: 'D-ARTEPP 普通片', fr: 'D-ARTEPP Comprimé' },
+            specification: '40mg/240mg',
+            count: 4,
+            description: { 
+                en: 'Four 40 mg / 320 mg tablets per day for 3 days', 
+                zh: '每日4片40mg普通片，连续3日',
+                fr: 'Quatre comprimés de 40 mg / 320 mg par jour pendant 3 jours'
+            }
+        });
+        alternatives.push({
+            type: { en: 'D-ARTEPP Dispersible', zh: 'D-ARTEPP 分散片', fr: 'D-ARTEPP Dispersible' },
+            specification: '20mg/120mg',
+            count: 8,
+            description: { 
+                en: 'Eight 20 mg / 160 mg tablets per day for 3 days', 
+                zh: '每日8片20mg分散片，连续3日',
+                fr: 'Huit comprimés dispersibles de 20 mg / 160 mg par jour pendant 3 jours'
+            }
+        });
+    } else if (weight >= 80 && weight < 100) {
+        // 80-100kg的备选方案
+        alternatives.push({
+            type: { en: 'D-ARTEPP', zh: 'D-ARTEPP 普通片', fr: 'D-ARTEPP Comprimé' },
+            specification: '40mg/240mg',
+            count: 5,
+            description: { 
+                en: 'Five 40 mg / 320 mg tablets per day for 3 days', 
+                zh: '每日5片40mg普通片，连续3日',
+                fr: 'Cinq comprimés de 40 mg / 320 mg par jour pendant 3 jours'
+            }
+        });
+        alternatives.push({
+            type: { en: 'D-ARTEPP', zh: 'D-ARTEPP 普通片', fr: 'D-ARTEPP Comprimé' },
+            specification: '80mg/480mg',
+            count: 2.5,
+            description: { 
+                en: 'Two and half 80 mg / 640 mg tablets per day for 3 days', 
+                zh: '每日2.5片80mg普通片，连续3日',
+                fr: 'Deux et demi comprimés de 80 mg / 640 mg par jour pendant 3 jours'
+            }
+        });
+        alternatives.push({
+            type: { en: 'D-ARTEPP Dispersible', zh: 'D-ARTEPP 分散片', fr: 'D-ARTEPP Dispersible' },
+            specification: '20mg/120mg',
+            count: 10,
+            description: { 
+                en: 'Ten 20 mg / 160 mg tablets per day for 3 days', 
+                zh: '每日10片20mg分散片，连续3日',
+                fr: 'Dix comprimés dispersibles de 20 mg / 160 mg par jour pendant 3 jours'
+            }
+        });
+        alternatives.push({
+            type: { en: 'D-ARTEPP Dispersible', zh: 'D-ARTEPP 分散片', fr: 'D-ARTEPP Dispersible' },
+            specification: '40mg/240mg',
+            count: 5,
+            description: { 
+                en: 'Five 40 mg / 320 mg tablets per day for 3 days', 
+                zh: '每日5片40mg分散片，连续3日',
+                fr: 'Cinq comprimés dispersibles de 40 mg / 320 mg par jour pendant 3 jours'
+            }
+        });
+    }
+    // 其他体重区间可以根据需要添加
 }
 
 // 查找Argesun剂量推荐
@@ -489,31 +650,119 @@ export function displayDarteppResult(container) {
         return dosage.type;
     };
     
+    // 获取描述文本的多语言支持
+    const getDescriptionText = (description) => {
+        if (typeof description === 'object') {
+            return description[currentLanguage] || description.en;
+        }
+        return description || '';
+    };
+    
     // 获取药品单位的翻译
-    const getTabletText = () => {
-        switch(currentLanguage) {
-            case 'zh': return '片';
-            case 'fr': return 'comprimés';
-            default: return 'tablets';
+    const getTabletText = (count) => {
+        if (count === 1.5 || count === 2.5) {
+            switch(currentLanguage) {
+                case 'zh': return '片';
+                case 'fr': return 'comprimés';
+                default: return 'tablets';
+            }
+        } else {
+            const tabletKey = count === 1 ? 'tablet' : 'tablets';
+            switch(currentLanguage) {
+                case 'zh': return count === 1 ? '片' : '片';
+                case 'fr': return count === 1 ? 'comprimé' : 'comprimés';
+                default: return tabletKey;
+            }
         }
     };
     
-    const tabletText = getTabletText();
+    // 最优方案显示
+    const bestOption = result.bestOption;
+    const tabletText = getTabletText(bestOption.count);
+    const countDisplay = bestOption.count === 1.5 ? '1.5' : 
+                         bestOption.count === 2.5 ? '2.5' : 
+                         bestOption.count;
     
-    const dosageHtml = result.dosages.map(dosage => `
-        <div class="bg-white rounded-lg p-4 mb-3 border border-gray-200 hover:shadow-md transition-shadow">
+    const bestOptionHtml = `
+        <div class="bg-white rounded-lg p-4 mb-3 border-2 border-blue-200 hover:shadow-md transition-shadow">
             <div class="flex justify-between items-center mb-2">
                 <div>
-                    <span class="font-semibold text-gray-800">${medicationType(dosage)}</span>
-                    <span class="ml-2 text-sm text-gray-600">${dosage.specification}</span>
+                    <span class="font-semibold text-gray-800">${medicationType(bestOption)}</span>
+                    <span class="ml-2 text-sm text-gray-600">${bestOption.specification}</span>
                 </div>
-                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-bold">${dosage.count} ${tabletText}</span>
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-bold">
+                    ${countDisplay} ${tabletText}
+                </span>
             </div>
             <div class="text-sm text-gray-600">
-                ${window.translations?.[currentLanguage]?.dosageInstruction || 'Recommended dosage:'} ${window.translations?.[currentLanguage]?.takeDaily || 'Take daily'} ${dosage.count} ${tabletText} ${window.translations?.[currentLanguage]?.forDays || 'for 3 days'}
+                ${window.translations?.[currentLanguage]?.dosageInstruction || 'Recommended dosage:'} 
+                ${window.translations?.[currentLanguage]?.takeDaily || 'Take daily'} 
+                ${countDisplay} ${tabletText} 
+                ${window.translations?.[currentLanguage]?.forDays || 'for 3 days'}
+            </div>
+            <div class="mt-2 text-xs text-blue-600 font-medium">
+                ${window.translations?.[currentLanguage]?.optimalSelection || 'Optimal Selection (Fewest Tablets)'}
             </div>
         </div>
-    `).join('');
+    `;
+    
+    // 备选方案显示
+    let alternativesHtml = '';
+    if (result.alternatives && result.alternatives.length > 0) {
+        // 去重：避免重复的备选方案
+        const uniqueAlternatives = [];
+        const seenCombinations = new Set();
+        
+        result.alternatives.forEach(alt => {
+            const key = `${alt.specification}_${alt.count}_${JSON.stringify(alt.type)}`;
+            if (!seenCombinations.has(key)) {
+                seenCombinations.add(key);
+                uniqueAlternatives.push(alt);
+            }
+        });
+        
+        // 限制最多显示4个备选方案
+        const displayAlternatives = uniqueAlternatives.slice(0, 4);
+        
+        alternativesHtml = `
+            <div class="mt-6">
+                <h5 class="font-medium text-gray-700 mb-3 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    ${window.translations?.[currentLanguage]?.alternativeOptions || 'Alternative Options'}:
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    ${displayAlternatives.map(alt => {
+                        const tabletText = getTabletText(alt.count);
+                        const countDisplay = alt.count === 1.5 ? '1.5' : 
+                                             alt.count === 2.5 ? '2.5' : 
+                                             alt.count;
+                        
+                        return `
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="font-medium text-gray-800 text-sm">${medicationType(alt)}</div>
+                                        <div class="text-xs text-gray-600 mt-1">${alt.specification}</div>
+                                    </div>
+                                    <span class="px-2 py-1 bg-gray-200 text-gray-700 rounded text-sm font-medium">
+                                        ${countDisplay} ${tabletText}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-3 pt-2 border-t border-gray-200">
+                                    ${getDescriptionText(alt.description)}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    ${window.translations?.[currentLanguage]?.alternativeNote || 'Alternative options provide flexibility based on available inventory.'}
+                </p>
+            </div>
+        `;
+    }
     
     // 使用辅助函数获取处理后的标题
     const dosageTitle = getDosageResultTitle(currentWeight);
@@ -534,8 +783,10 @@ export function displayDarteppResult(container) {
             
             <div class="space-y-3 mb-6">
                 <h5 class="font-medium text-gray-700">${window.translations?.[currentLanguage]?.recommendedMedication || 'Recommended Medication Plan:'}</h5>
-                ${dosageHtml}
+                ${bestOptionHtml}
             </div>
+            
+            ${alternativesHtml}
             
             <div class="mt-6 p-4 bg-blue-50 rounded-lg">
                 <div class="flex items-start">

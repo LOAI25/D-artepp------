@@ -1,5 +1,5 @@
 // products.js - 产品数据
-// 版本：v8.7
+// 版本：v8.8 - 根据官方剂量表完善D-Artepp数据
 
 // D-Artepp 产品数据
 export const darteppData = {
@@ -19,23 +19,33 @@ export const darteppData = {
             },
             specifications: [
                 { 
-                    dosage: '20mg/160mg', 
+                    dosage: '20mg/120mg', 
                     weightRanges: [
                         { min: 5, max: 8, count: 1 },
-                        { min: 11, max: 17, count: 2 }
+                        { min: 11, max: 17, count: 2 },
+                        { min: 17, max: 25, count: 3 },
+                        { min: 25, max: 36, count: 4 },
+                        { min: 36, max: 60, count: 6 },
+                        { min: 60, max: 80, count: 8 },
+                        { min: 80, max: 100, count: 10 }
                     ]
                 },
                 { 
-                    dosage: '30mg/240mg', 
+                    dosage: '30mg/180mg', 
                     weightRanges: [
                         { min: 8, max: 11, count: 1 },
-                        { min: 17, max: 25, count: 2 }
+                        { min: 17, max: 25, count: 2 },
+                        { min: 36, max: 60, count: 4 }
                     ]
                 },
                 { 
-                    dosage: '40mg/320mg', 
+                    dosage: '40mg/240mg', 
                     weightRanges: [
-                        { min: 25, max: 36, count: 2 }
+                        { min: 11, max: 17, count: 1 },
+                        { min: 25, max: 36, count: 2 },
+                        { min: 36, max: 60, count: 3 },
+                        { min: 60, max: 80, count: 4 },
+                        { min: 80, max: 100, count: 5 }
                     ]
                 }
             ]
@@ -43,21 +53,34 @@ export const darteppData = {
         {
             name: {
                 en: 'D-ARTEPP',
-                zh: 'D-ARTEPP',
-                fr: 'D-ARTEPP'
+                zh: 'D-ARTEPP 普通片',
+                fr: 'D-ARTEPP Comprimé'
             },
             specifications: [
                 { 
-                    dosage: '60mg/480mg', 
+                    dosage: '40mg/240mg', 
                     weightRanges: [
+                        { min: 17, max: 25, count: 1.5 },
+                        { min: 25, max: 36, count: 2 },
+                        { min: 36, max: 60, count: 3 },
+                        { min: 60, max: 80, count: 4 },
+                        { min: 80, max: 100, count: 5 }
+                    ]
+                },
+                { 
+                    dosage: '60mg/360mg', 
+                    weightRanges: [
+                        { min: 17, max: 25, count: 1 },
                         { min: 36, max: 60, count: 2 }
                     ]
                 },
                 { 
-                    dosage: '80mg/640mg', 
+                    dosage: '80mg/480mg', 
                     weightRanges: [
+                        { min: 25, max: 36, count: 1 },
+                        { min: 36, max: 60, count: 1.5 },
                         { min: 60, max: 80, count: 2 },
-                        { min: 80, max: 200, count: 2.5 }
+                        { min: 80, max: 100, count: 2.5 }
                     ]
                 }
             ]

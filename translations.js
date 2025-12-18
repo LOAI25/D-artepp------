@@ -1,5 +1,5 @@
 // translations.js - 翻译数据
-// 版本：v8.7
+// 版本：v8.8 (增加备选方案说明)
 
 export const translations = {
     en: {
@@ -97,8 +97,9 @@ export const translations = {
         removeAir: "Remove air from ampoule before saline injection",
         patientInjection: "Patient Final Injection Volume",
         finalConcentration: "Final Concentration",
-        // 新增
-        alternativeOptions: "Alternative Options:",
+        // 新增 - 备选方案相关
+        alternativeOptions: "Alternative Options",
+        alternativeNote: "Alternative options provide flexibility based on available inventory.",
         optimalSelection: "Optimal Selection",
         // Argesun 溶液名称（新增）
         solutionVolume: "Solution Volume",
@@ -199,8 +200,9 @@ export const translations = {
         removeAir: "注射氯化钠前排出安瓿中的空气",
         patientInjection: "患者最终注射体积",
         finalConcentration: "最终浓度",
-        // 新增
-        alternativeOptions: "替代方案：",
+        // 新增 - 备选方案相关
+        alternativeOptions: "备选方案",
+        alternativeNote: "备选方案可根据库存情况提供灵活性。",
         optimalSelection: "最优选择",
         // Argesun 溶液名称（新增）
         solutionVolume: "溶液体积",
@@ -301,8 +303,9 @@ export const translations = {
         removeAir: "Retirer l'air de l'ampoule avant l'injection de saline",
         patientInjection: "Volume d'injection final pour le patient",
         finalConcentration: "Concentration finale",
-        // 新增
-        alternativeOptions: "Options Alternatives:",
+        // 新增 - 备选方案相关
+        alternativeOptions: "Options Alternatives",
+        alternativeNote: "Les options alternatives offrent une flexibilité selon les stocks disponibles.",
         optimalSelection: "Sélection Optimale",
         // Argesun 溶液名称（新增）
         solutionVolume: "Volume de Solution",
