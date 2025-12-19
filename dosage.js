@@ -1,5 +1,5 @@
 // dosage.js - 剂量计算模块
-// 版本：v8.9 - 修正：注射体积基于实际计算，向上取整到个位数，去掉固定归位规则
+// 版本：v8.11 - 优化：仅37.5-50kg统一使用1盒120mg，备选方案特定显示
 
 // 使用函数获取器而不是直接变量
 let getCurrentWeight, getSelectedProduct, getInjectionRoute, getCurrentLanguage;
@@ -501,15 +501,25 @@ export function findArtesunDosage(weight) {
         roundedInjectionVolume: roundedInjectionVolume,
         concentration: concentration,
         route: injectionRoute,
+        alternatives: getSpecificAlternatives(totalDose, totalMg) // 获取特定备选方案
     };
 }
 
 function findBestArtesunStrengthCombination(totalDose, product) {
     if (!product || !product.strengths) return null;
     
-    const strengths = product.strengths.map(s => s.mg).sort((a, b) => b - a); // 从大到小排序
+    const strengths = product.strengths.map(s => s.mg).sort((a, b) => b - a);
     
-    // 简单的贪心算法：优先使用大规格
+    // 特别处理37.5-50kg区间：对应90-100mg，统一使用1盒120mg
+    // 注意：37.5kg对应90mg，50kg对应100mg
+    if (totalDose >= 90 && totalDose <= 100) {
+        return {
+            combination: [120],
+            totalMg: 120
+        };
+    }
+    
+    // 其他区间使用原有逻辑
     let combination = [];
     let remaining = totalDose;
     
@@ -606,6 +616,29 @@ function optimizeArtesunCombination(combination, totalDose, product) {
     }
     
     return null;
+}
+
+// 获取特定的备选方案
+function getSpecificAlternatives(totalDose, totalMg) {
+    const alternatives = [];
+    
+    // 只有在最优方案总剂量为90mg时，提供1盒120mg作为备选
+    if (totalMg === 90) {
+        alternatives.push({
+            recommendedStrengths: { 120: 1 },
+            description: "1 vial × 120mg"
+        });
+    }
+    
+    // 只有在最优方案总剂量为180mg时，提供2盒120mg作为备选
+    if (totalMg === 210) {
+        alternatives.push({
+            recommendedStrengths: { 120: 2 },
+            description: "2 vials × 120mg"
+        });
+    }
+    
+    return alternatives;
 }
 
 // 显示D-Artepp结果
@@ -940,36 +973,11 @@ export function displayArtesunResult(container) {
     const isIV = result.route === 'iv';
     const mlText = currentLanguage === 'zh' ? '毫升' : 'ml';
     const mgText = currentLanguage === 'zh' ? '毫克' : 'mg';
-    
-    // 获取替代方案
-    const alternatives = getArtesunAlternatives(result.combination, selectedProduct);
+    const vialText = window.translations?.[currentLanguage]?.vial || 'vial';
     
     // 构建规格显示HTML
     const strengthsHtml = Object.entries(result.recommendedStrengths).map(([strength, count]) => {
         const strengthInfo = selectedProduct.strengths.find(s => s.mg === parseInt(strength));
-        
-        // 查找此规格的替代方案
-        const strengthAlternatives = alternatives.filter(alt => {
-            const altStrength = parseInt(Object.keys(alt.recommendedStrengths)[0]);
-            return altStrength !== parseInt(strength) && 
-                   alt.totalMg >= result.totalDose * 0.95 && 
-                   alt.totalMg <= result.totalDose * 1.1;
-        });
-        
-        let alternativesHtml = '';
-        if (strengthAlternatives.length > 0) {
-            const altText = strengthAlternatives.map(alt => {
-                const altStrength = Object.keys(alt.recommendedStrengths)[0];
-                const altCount = alt.recommendedStrengths[altStrength];
-                return `${altCount} × ${altStrength}mg`;
-            }).join(', ');
-            
-            alternativesHtml = `
-                <div class="mt-2 text-xs text-gray-500">
-                    <span class="font-medium">${window.translations?.[currentLanguage]?.alternativeOptions || 'Alternative Options:'}</span> ${altText}
-                </div>
-            `;
-        }
         
         return `
             <div class="bg-white rounded-lg p-4 mb-3 border border-gray-200 hover:shadow transition-shadow">
@@ -984,18 +992,17 @@ export function displayArtesunResult(container) {
                                 <div>${window.translations?.[currentLanguage]?.bicarbonateVolume || 'Bicarbonate'}: ${strengthInfo?.bicarbonateVolume || 0}${mlText}</div>
                                 <div>${window.translations?.[currentLanguage]?.salineVolume || 'Saline'}: ${isIV ? strengthInfo?.salineVolume || 0 : strengthInfo?.imSalineVolume || 0}${mlText}</div>
                             </div>
-                            ${alternativesHtml}
                         </div>
                     </div>
                     <span class="px-3 py-2 bg-green-100 text-green-800 rounded-full font-bold">
-                        ${count} ${window.translations?.[currentLanguage]?.vial || 'vial'}${currentLanguage === 'zh' ? '' : (count > 1 ? 's' : '')}
+                        ${count} ${vialText}${currentLanguage === 'zh' ? '' : (count > 1 ? 's' : '')}
                     </span>
                 </div>
             </div>
         `;
     }).join('');
     
-    // 患者最终用量信息 - 只显示最终注射体积
+    // 患者最终用量信息
     const patientInjectionInfo = `
         <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
             <div class="flex flex-col md:flex-row md:items-center justify-between">
@@ -1011,19 +1018,47 @@ export function displayArtesunResult(container) {
         </div>
     `;
     
-    // 溶液体积信息 - 简化显示，移到底部
-    const solutionVolumesInfo = `
-        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-white p-3 rounded border border-gray-300">
-                    <div class="text-sm text-gray-600 mb-1">${window.translations?.[currentLanguage]?.bicarbonateVolume || 'Bicarbonate Volume'}</div>
-                    <div class="text-xl font-bold text-gray-800">${result.totalBicarbonateVolume} ${mlText}</div>
-                    <div class="text-xs text-gray-500 mt-1">${window.translations?.[currentLanguage]?.useAllBicarbonate || 'Use all content of bicarbonate ampoule'}</div>
+    // 备选方案 - 只在特定情况下显示
+    let alternativesHtml = '';
+    if (result.alternatives && result.alternatives.length > 0) {
+        const alternativeText = result.alternatives.map(alt => {
+            return Object.entries(alt.recommendedStrengths)
+                .map(([strength, count]) => {
+                    const pluralSuffix = currentLanguage === 'zh' ? '' : (count > 1 ? 's' : '');
+                    return `${count} ${vialText}${pluralSuffix} × ${strength}${mgText}`;
+                })
+                .join(' + ');
+        }).join('; ');
+        
+        alternativesHtml = `
+            <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="text-sm text-gray-700 mb-1 font-medium">
+                    ${window.translations?.[currentLanguage]?.alternativeOptions || 'Alternative Options'}:
                 </div>
-                <div class="bg-white p-3 rounded border border-gray-300">
-                    <div class="text-sm text-gray-600 mb-1">${window.translations?.[currentLanguage]?.salineVolume || 'Saline Volume'}</div>
-                    <div class="text-xl font-bold text-gray-800">${result.totalSalineVolume} ${mlText}</div>
-                    <div class="text-xs text-gray-500 mt-1">${window.translations?.[currentLanguage]?.removeAir || 'Remove air from ampoule before saline injection'}</div>
+                <div class="text-sm text-gray-600">
+                    ${alternativeText}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 溶液体积信息
+    const solutionVolumesInfo = `
+        <div class="mb-6">
+            ${alternativesHtml}
+            
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-3 rounded border border-gray-300">
+                        <div class="text-sm text-gray-600 mb-1">${window.translations?.[currentLanguage]?.bicarbonateVolume || 'Bicarbonate Volume'}</div>
+                        <div class="text-xl font-bold text-gray-800">${result.totalBicarbonateVolume} ${mlText}</div>
+                        <div class="text-xs text-gray-500 mt-1">${window.translations?.[currentLanguage]?.useAllBicarbonate || 'Use all content of bicarbonate ampoule'}</div>
+                    </div>
+                    <div class="bg-white p-3 rounded border border-gray-300">
+                        <div class="text-sm text-gray-600 mb-1">${window.translations?.[currentLanguage]?.salineVolume || 'Saline Volume'}</div>
+                        <div class="text-xl font-bold text-gray-800">${result.totalSalineVolume} ${mlText}</div>
+                        <div class="text-xs text-gray-500 mt-1">${window.translations?.[currentLanguage]?.removeAir || 'Remove air from ampoule before saline injection'}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1053,12 +1088,12 @@ export function displayArtesunResult(container) {
             <div class="mb-6">
                 <h5 class="font-medium text-gray-700 mb-3">${window.translations?.[currentLanguage]?.selectStrength || 'Select Strength'}:</h5>
                 <div class="mb-2 text-sm text-blue-600">
-                    ${window.translations?.[currentLanguage]?.optimalSelection || 'Optimal Selection'}: ${result.combination.map(mg => `${mg}mg`).join(' + ')}
+                    ${window.translations?.[currentLanguage]?.optimalSelection || 'Optimal Selection'}: ${result.combination.map(mg => `${mg}mg`).join(' + ')} (Total: ${result.totalMg}${mgText})
                 </div>
                 ${strengthsHtml}
             </div>
             
-            <!-- 溶液体积信息 -->
+            <!-- 溶液体积信息（包含上面的备选方案） -->
             ${solutionVolumesInfo}
             
             <!-- 重要警告 -->
@@ -1096,44 +1131,6 @@ export function displayArtesunResult(container) {
             </div>
         </div>
     `;
-}
-
-function getArtesunAlternatives(currentCombination, product) {
-    if (!product || !product.strengths) return [];
-    
-    const strengths = product.strengths.map(s => s.mg).sort((a, b) => b - a);
-    const currentTotal = currentCombination.reduce((sum, mg) => sum + mg, 0);
-    const alternatives = [];
-    
-    // 生成可能的替代组合
-    for (let i = 0; i < strengths.length; i++) {
-        const altCombination = [];
-        const altStrength = strengths[i];
-        
-        // 尝试使用单一规格
-        const count = Math.ceil(currentTotal / altStrength);
-        for (let j = 0; j < count; j++) {
-            altCombination.push(altStrength);
-        }
-        
-        const altTotal = altCombination.reduce((sum, mg) => sum + mg, 0);
-        
-        // 只添加合理的替代方案（不超过当前总剂量的±10%）
-        if (altTotal >= currentTotal * 0.95 && altTotal <= currentTotal * 1.1) {
-            const strengthCounts = {};
-            altCombination.forEach(mg => {
-                strengthCounts[mg] = (strengthCounts[mg] || 0) + 1;
-            });
-            
-            alternatives.push({
-                combination: altCombination,
-                totalMg: altTotal,
-                recommendedStrengths: strengthCounts
-            });
-        }
-    }
-    
-    return alternatives;
 }
 
 // ==================== 辅助函数 ====================
