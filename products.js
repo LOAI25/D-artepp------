@@ -53,8 +53,8 @@ export const darteppData = {
         {
             name: {
                 en: 'D-ARTEPP',
-                zh: 'D-ARTEPP 普通片',
-                fr: 'D-ARTEPP Comprimé'
+                zh: 'D-ARTEPP',
+                fr: 'D-ARTEPP'
             },
             specifications: [
                 { 

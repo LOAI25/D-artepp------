@@ -995,49 +995,6 @@ export function displayArtesunResult(container) {
         `;
     }).join('');
     
-    // 核心信息卡片
-    const coreInfoCards = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <!-- 碳酸氢钠体积 -->
-            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-sm text-green-600 mb-1">${window.translations?.[currentLanguage]?.bicarbonateVolume || 'Bicarbonate Volume'}</div>
-                        <div class="text-2xl font-bold text-green-700">${result.totalBicarbonateVolume} ${mlText}</div>
-                    </div>
-                    <div class="bg-green-100 p-2 rounded-lg">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="text-xs text-green-600 mt-2">
-                    <div class="font-medium">${window.translations?.[currentLanguage]?.reconstitutionNote || 'Reconstitution Note'}:</div>
-                    <div>${window.translations?.[currentLanguage]?.useAllBicarbonate || 'Use all content of bicarbonate ampoule'}</div>
-                </div>
-            </div>
-            
-            <!-- 氯化钠体积 -->
-            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-sm text-purple-600 mb-1">${window.translations?.[currentLanguage]?.salineVolume || 'Saline Volume'}</div>
-                        <div class="text-2xl font-bold text-purple-700">${result.totalSalineVolume} ${mlText}</div>
-                    </div>
-                    <div class="bg-purple-100 p-2 rounded-lg">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="text-xs text-purple-600 mt-2">
-                    <div class="font-medium">${window.translations?.[currentLanguage]?.diluteNote || 'Dilution Note'}:</div>
-                    <div>${window.translations?.[currentLanguage]?.removeAir || 'Remove air from ampoule before saline injection'}</div>
-                </div>
-            </div>
-        </div>
-    `;
-    
     // 患者最终用量信息 - 只显示最终注射体积
     const patientInjectionInfo = `
         <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
@@ -1049,6 +1006,24 @@ export function displayArtesunResult(container) {
                 <div class="mt-3 md:mt-0 text-center md:text-right">
                     <div class="text-3xl font-bold text-green-700">${result.roundedInjectionVolume} ${mlText}</div>
                     <div class="text-sm text-gray-600">${window.translations?.[currentLanguage]?.finalInjectionVolume || 'Final injection volume'}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 溶液体积信息 - 简化显示，移到底部
+    const solutionVolumesInfo = `
+        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white p-3 rounded border border-gray-300">
+                    <div class="text-sm text-gray-600 mb-1">${window.translations?.[currentLanguage]?.bicarbonateVolume || 'Bicarbonate Volume'}</div>
+                    <div class="text-xl font-bold text-gray-800">${result.totalBicarbonateVolume} ${mlText}</div>
+                    <div class="text-xs text-gray-500 mt-1">${window.translations?.[currentLanguage]?.useAllBicarbonate || 'Use all content of bicarbonate ampoule'}</div>
+                </div>
+                <div class="bg-white p-3 rounded border border-gray-300">
+                    <div class="text-sm text-gray-600 mb-1">${window.translations?.[currentLanguage]?.salineVolume || 'Saline Volume'}</div>
+                    <div class="text-xl font-bold text-gray-800">${result.totalSalineVolume} ${mlText}</div>
+                    <div class="text-xs text-gray-500 mt-1">${window.translations?.[currentLanguage]?.removeAir || 'Remove air from ampoule before saline injection'}</div>
                 </div>
             </div>
         </div>
@@ -1071,8 +1046,6 @@ export function displayArtesunResult(container) {
                 </div>
             </div>
             
-            ${coreInfoCards}
-            
             <!-- 患者最终用量信息 -->
             ${patientInjectionInfo}
             
@@ -1084,6 +1057,9 @@ export function displayArtesunResult(container) {
                 </div>
                 ${strengthsHtml}
             </div>
+            
+            <!-- 溶液体积信息 -->
+            ${solutionVolumesInfo}
             
             <!-- 重要警告 -->
             <div class="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
