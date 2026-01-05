@@ -848,7 +848,7 @@ export function displayDarteppResult(container) {
             </div>
             
             <div class="space-y-3 mb-6">
-                <h5 class="font-medium text-gray-700">${window.translations?.[currentLanguage]?.recommendedMedication || 'Recommended Medication Plan:'}</h5>
+                <h5 class="font-medium text-gray-700">${window.translations?.[currentLanguage]?.recommendedDosage || 'Recommended Dosage:'}</h5>
                 ${bestOptionHtml}
             </div>
             
@@ -965,7 +965,7 @@ export function displayArgesunResult(container) {
             
             <!-- 规格选择 -->
             <div class="space-y-3 mb-6">
-                <h5 class="font-medium text-gray-700">${window.translations?.[currentLanguage]?.selectStrength || 'Select Strength Combination'}:</h5>
+                <h5 class="font-medium text-gray-700">${window.translations?.[currentLanguage]?.recommendedMedication || 'Recommended Medication Plan:'}:</h5>
                 <div class="mb-2 text-sm text-blue-600">
                     ${window.translations?.[currentLanguage]?.optimalSelection || 'Optimal Selection'}: ${result.combination.map(mg => `${mg}mg`).join(' + ')} (Total: ${result.totalMg}mg)
                 </div>
@@ -1176,7 +1176,7 @@ export function displayArtesunResult(container) {
             
             <!-- 最优方案 -->
             <div class="mb-6">
-                <h5 class="font-medium text-gray-700 mb-3">${window.translations?.[currentLanguage]?.selectStrength || 'Select Strength'}:</h5>
+                <h5 class="font-medium text-gray-700 mb-3">${window.translations?.[currentLanguage]?.recommendedMedication || 'Recommended Medication Plan:'}:</h5>
                 <div class="mb-2 text-sm text-blue-600">
                     ${window.translations?.[currentLanguage]?.optimalSelection || 'Optimal Selection'}: ${result.combination.map(mg => `${mg}mg`).join(' + ')} (Total: ${result.totalMg}${mgText})
                 </div>
@@ -1255,6 +1255,48 @@ export function getDosageResultTitle(weight) {
     }
 }
 
+// 获取剂量计划标题（用于显示在右侧结果区域的标题）
+export function getDosagePlanTitle() {
+    const { selectedProduct, currentLanguage } = getCurrentValues();
+    
+    if (!selectedProduct) {
+        return window.translations?.[currentLanguage]?.dosagePlan || 'Recommended Dosage Plan';
+    }
+    
+    if (selectedProduct.id === 'dartepp') {
+        return window.translations?.[currentLanguage]?.darteppDosagePlanTitle || 'Recommended Dosage';
+    } else if (selectedProduct.id === 'argesun') {
+        return window.translations?.[currentLanguage]?.argesunDosagePlanTitle || 'Recommended Dose';
+    } else if (selectedProduct.id === 'artesun') {
+        return window.translations?.[currentLanguage]?.artesunDosagePlanTitle || 'Recommended Dose';
+    } else {
+        return window.translations?.[currentLanguage]?.dosagePlan || 'Recommended Dosage Plan';
+    }
+}
+
+// 更新剂量计划标题
+export function updateDosagePlanTitle() {
+    const dosagePlanTitleElement = document.querySelector('.dosage-plan-title');
+    if (dosagePlanTitleElement) {
+        const title = getDosagePlanTitle();
+        dosagePlanTitleElement.textContent = title;
+        
+        // 如果需要data-i18n属性，也可以更新
+        const { currentLanguage } = getCurrentValues();
+        if (currentLanguage) {
+            // 根据药品类型设置不同的data-i18n属性
+            const { selectedProduct } = getCurrentValues();
+            if (selectedProduct?.id === 'dartepp') {
+                dosagePlanTitleElement.setAttribute('data-i18n', 'darteppDosagePlanTitle');
+            } else if (selectedProduct?.id === 'argesun' || selectedProduct?.id === 'artesun') {
+                dosagePlanTitleElement.setAttribute('data-i18n', 'injectionDosagePlanTitle');
+            } else {
+                dosagePlanTitleElement.setAttribute('data-i18n', 'dosagePlan');
+            }
+        }
+    }
+}
+
 // 获取产品副标题
 export function getProductSubtitle() {
     const { selectedProduct, currentLanguage } = getCurrentValues();
@@ -1313,6 +1355,9 @@ export function updateDosageDisplay() {
     
     const { selectedProduct, currentWeight } = getCurrentValues();
     
+    // 更新剂量计划标题
+    updateDosagePlanTitle();
+    
     // 如果没有选择产品，显示默认提示
     if (!selectedProduct) {
         showSelectWeightPrompt(dosageResult);
@@ -1340,5 +1385,6 @@ export function updateDosageDisplay() {
 if (typeof window !== 'undefined') {
     window.updateDosageDisplay = updateDosageDisplay;
     window.setInjectionRoute = setInjectionRoute;
+    window.updateDosagePlanTitle = updateDosagePlanTitle;
     console.log('Dosage module functions exported to window');
 }

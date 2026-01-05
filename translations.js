@@ -29,6 +29,9 @@ export const translations = {
         weightRange: "Range: 0-100kg",
         weightRangeDartepp: "Range: 5-100kg", // D-Artepp专用
         dosagePlan: "Recommended Dosage Plan",
+        darteppDosagePlanTitle: "Recommended Dosage",
+        argesunDosagePlanTitle: "Recommended Dose",
+        artesunDosagePlanTitle: "Recommended Dose",
         selectWeight: "Please select weight",
         selectWeightDesc: "Slide the dial on the left to set patient weight",
         backToProducts: "Back to Products",
@@ -45,7 +48,7 @@ export const translations = {
         artesunDosageResultSubtitle: "Artesun® - Injectable Artesunate (Dual Solvent)",
         // 通用结果
         patientWeight: "Patient Weight",
-        recommendedMedication: "Recommended Medication Plan:",
+        recommendedMedication: "Recommended Medication Plan",
         dosageInstruction: "Recommended dosage:",
         medicationInstructions: "Medication Instructions:",
         takeDaily: "Take daily",
@@ -132,6 +135,9 @@ export const translations = {
         weightRange: "范围: 0-100kg",
         weightRangeDartepp: "范围: 5-100kg", // D-Artepp专用
         dosagePlan: "推荐剂量方案",
+        darteppDosagePlanTitle: "推荐剂量",
+        argesunDosagePlanTitle: "推荐用量",
+        artesunDosagePlanTitle: "推荐用量",
         selectWeight: "请选择体重",
         selectWeightDesc: "滑动左侧刻度盘来设置患者体重",
         backToProducts: "返回产品选择",
@@ -148,7 +154,7 @@ export const translations = {
         artesunDosageResultSubtitle: "Artesun® - 注射用青蒿琥酯 (双溶剂)",
         // 通用结果
         patientWeight: "患者体重",
-        recommendedMedication: "推荐用药方案：",
+        recommendedMedication: "推荐用药方案",
         dosageInstruction: "推荐用量：",
         medicationInstructions: "用药说明：",
         takeDaily: "每日",
@@ -235,6 +241,9 @@ export const translations = {
         weightRange: "Plage: 0-100kg",
         weightRangeDartepp: "Plage: 5-100kg", // D-Artepp专用
         dosagePlan: "Plan de Dosage Recommandé",
+        darteppDosagePlanTitle: "Dosage recommandé",
+        argesunDosagePlanTitle: "Dose recommandée",
+        artesunDosagePlanTitle: "Dose recommandée",
         selectWeight: "Veuillez sélectionner le poids",
         selectWeightDesc: "Faites glisser le cadran à gauche pour définir le poids du patient",
         backToProducts: "Retour aux Produits",
@@ -251,7 +260,7 @@ export const translations = {
         artesunDosageResultSubtitle: "Artesun® - Artesunate Injectible (Double Solvant)",
         // 通用结果
         patientWeight: "Poids du Patient",
-        recommendedMedication: "Plan de Médication Recommandé:",
+        recommendedMedication: "Plan de Médication Recommandé",
         dosageInstruction: "Dosage recommandé:",
         medicationInstructions: "Instructions de Médication:",
         takeDaily: "Prendre quotidiennement",
