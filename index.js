@@ -58,6 +58,11 @@ function initializeGlobalDependencies() {
     window.updateRouteButtons = dosageModule.updateRouteButtons;
     window.updateWeightRangeHint = dialModule.updateWeightRangeHint;
     
+    // 将setWeight挂载到window，供HTML调用
+    window.setWeight = function(weight) {
+        handleQuickWeightSelect(weight);
+    };
+    
     console.log('Global dependencies initialized');
 }
 
@@ -119,6 +124,21 @@ function setupEventListeners() {
     if (manualWeightInput) {
         manualWeightInput.addEventListener('blur', handleManualWeightInput);
         manualWeightInput.addEventListener('keydown', handleManualWeightKeyDown);
+        // 监听input事件，实时同步
+        manualWeightInput.addEventListener('input', function(e) {
+            const weight = parseFloat(e.target.value);
+            if (!isNaN(weight) && weight >= 0 && weight <= 100) {
+                window.currentWeight = weight;
+                // 实时更新剂量
+                if (window.updateDosageDisplay) {
+                    window.updateDosageDisplay();
+                }
+                // 检查体重警告
+                if (typeof checkWeightWarning === 'function') {
+                    checkWeightWarning();
+                }
+            }
+        });
     }
     
     // 返回产品选择按钮
@@ -141,6 +161,54 @@ function setupEventListeners() {
     if (dialModule.setupDialEvents) {
         dialModule.setupDialEvents();
     }
+}
+
+// 快速选择体重的核心处理函数
+function handleQuickWeightSelect(weight) {
+    console.log('Handling quick weight select:', weight);
+    
+    // 1. 验证体重范围
+    const minWeight = window.selectedProduct?.id === 'dartepp' ? 5 : 0.1;
+    let finalWeight = weight;
+    
+    if (weight < minWeight) {
+        finalWeight = minWeight;
+        console.log(`Weight too low, adjusted to min: ${finalWeight}`);
+    } else if (weight > 100) {
+        finalWeight = 100;
+        console.log(`Weight too high, adjusted to max: ${finalWeight}`);
+    }
+    
+    // 2. 更新全局体重变量
+    window.currentWeight = finalWeight;
+    
+    // 3. 更新输入框显示
+    const weightInput = document.getElementById('manualWeight');
+    if (weightInput) {
+        weightInput.value = finalWeight;
+    }
+    
+    // 4. 调用dial模块的setWeight（如果存在）
+    if (dialModule.setWeight) {
+        dialModule.setWeight(finalWeight);
+    }
+    
+    // 5. 更新体重范围提示
+    if (window.updateWeightRangeHint) {
+        window.updateWeightRangeHint();
+    }
+    
+    // 6. 强制更新剂量显示（核心修复点）
+    if (window.updateDosageDisplay) {
+        window.updateDosageDisplay();
+    }
+    
+    // 7. 检查体重警告
+    if (typeof checkWeightWarning === 'function') {
+        checkWeightWarning();
+    }
+    
+    console.log('Quick weight select completed, currentWeight:', window.currentWeight);
 }
 
 // 绑定产品选择按钮
@@ -192,15 +260,17 @@ function bindQuickSelectButtons() {
     console.log(`Found ${quickSelectButtons.length} quick select buttons`);
     
     quickSelectButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(event) {
+            // 阻止默认的onclick先执行（避免重复调用）
+            event.preventDefault();
+            event.stopPropagation();
+            
             const weightText = this.textContent.replace('kg', '').trim();
             const weight = parseInt(weightText);
-            console.log('Quick select button clicked:', weight);
+            console.log('Quick select button clicked (JS):', weight);
             
             if (!isNaN(weight)) {
-                if (dialModule.setWeight) {
-                    dialModule.setWeight(weight);
-                }
+                handleQuickWeightSelect(weight); // 调用统一的处理函数
             }
         });
     });
@@ -211,7 +281,7 @@ function handleManualWeightInput(event) {
     const input = event.target;
     const weight = parseFloat(input.value);
     
-    console.log('Manual weight input:', weight);
+    console.log('Manual weight input (blur):', weight);
     
     if (!isNaN(weight)) {
         // 根据产品设置最小值
@@ -219,13 +289,9 @@ function handleManualWeightInput(event) {
         
         if (weight < minWeight) {
             console.log(`Weight ${weight} < min ${minWeight}, setting to ${minWeight}`);
-            if (dialModule.setWeight) {
-                dialModule.setWeight(minWeight);
-            }
+            handleQuickWeightSelect(minWeight); // 改用统一处理函数
         } else if (weight >= minWeight && weight <= 100) {
-            if (dialModule.setWeight) {
-                dialModule.setWeight(weight);
-            }
+            handleQuickWeightSelect(weight); // 改用统一处理函数
         } else {
             input.value = window.currentWeight.toFixed(1);
         }
@@ -246,13 +312,9 @@ function handleManualWeightKeyDown(event) {
             const minWeight = window.selectedProduct?.id === 'dartepp' ? 5 : 0.1;
             
             if (weight < minWeight) {
-                if (dialModule.setWeight) {
-                    dialModule.setWeight(minWeight);
-                }
+                handleQuickWeightSelect(minWeight); // 改用统一处理函数
             } else if (weight >= minWeight && weight <= 100) {
-                if (dialModule.setWeight) {
-                    dialModule.setWeight(weight);
-                }
+                handleQuickWeightSelect(weight); // 改用统一处理函数
             } else {
                 input.value = window.currentWeight.toFixed(1);
             }
@@ -280,14 +342,20 @@ window.selectProduct = function(product) {
     if (product === 'dartepp' && window.darteppData) {
         window.selectedProduct = window.darteppData;
         console.log('Selected D-Artepp:', window.selectedProduct);
+        // 重要：设置D-Artepp默认体重为35
+        window.currentWeight = 35;
         showCalculatorInterface();
     } else if (product === 'argesun' && window.argesunData) {
         window.selectedProduct = window.argesunData;
         console.log('Selected Argesun:', window.selectedProduct);
+        // 重要：设置Argesun默认体重为20
+        window.currentWeight = 35;
         showCalculatorInterface();
     } else if (product === 'artesun' && window.artesunData) {
         window.selectedProduct = window.artesunData;
         console.log('Selected Artesun:', window.selectedProduct);
+        // 重要：设置Artesun默认体重为20
+        window.currentWeight = 35;
         showCalculatorInterface();
     } else {
         console.error('Invalid product or product data not loaded:', product);
@@ -310,26 +378,30 @@ function showCalculatorInterface() {
         // 更新计算器标题和描述（先做这个，确保界面显示正确）
         window.updateCalculatorTitleAndDesc();
         
+        // 更新手动体重输入框的值
+        const weightInput = document.getElementById('manualWeight');
+        if (weightInput) {
+            weightInput.value = window.currentWeight;
+            console.log('Updated weight input to:', window.currentWeight);
+        }
+        
         // 初始化对应的刻度盘
         if (dialModule.initializeScale) {
             console.log('Initializing scale...');
             dialModule.initializeScale();
         }
         
-        // 设置初始体重
+        // 设置初始体重 - 改用统一处理函数
+        handleQuickWeightSelect(window.currentWeight);
+        
+        // 根据产品设置快速选择按钮
         if (window.selectedProduct.id === 'dartepp') {
-            console.log('Setting D-Artepp weight...');
-            if (dialModule.setWeight) {
-                dialModule.setWeight(35); // D-Artepp最小5kg，35kg是安全的初始值
-            }
+            console.log('Setting up D-Artepp quick select buttons...');
             if (dialModule.setupDarteppQuickSelectButtons) {
                 dialModule.setupDarteppQuickSelectButtons();
             }
         } else {
-            console.log('Setting general weight...');
-            if (dialModule.setWeight) {
-                dialModule.setWeight(35); // 其他产品从0开始
-            }
+            console.log('Setting up general quick select buttons...');
             if (dialModule.setupGeneralQuickSelectButtons) {
                 dialModule.setupGeneralQuickSelectButtons();
             }
@@ -351,9 +423,9 @@ function showCalculatorInterface() {
             routeSelector.classList.add('hidden');
         }
         
-        // 更新剂量显示
-        if (window.updateDosageDisplay) {
-            window.updateDosageDisplay();
+        // 检查体重警告
+        if (typeof checkWeightWarning === 'function') {
+            checkWeightWarning();
         }
     } else {
         console.error('Cannot show calculator interface:', {
@@ -449,6 +521,24 @@ window.setInjectionRoute = function(route) {
     }
 };
 
+// 体重警告检查函数
+window.checkWeightWarning = function() {
+    const warningEl = document.getElementById('weightWarning');
+    const warningMsg = document.getElementById('warningMessage');
+    if (!warningEl || !warningMsg) return;
+    
+    const lang = window.currentLanguage || 'en';
+    const translations = window.translations[lang] || window.translations.en;
+    const minWeight = window.selectedProduct?.id === 'dartepp' ? 5 : 0.1;
+    
+    if (window.currentWeight < minWeight) {
+        warningEl.classList.remove('hidden');
+        warningMsg.textContent = translations.weightWarning || `Weight must be at least ${minWeight}kg for ${window.selectedProduct?.name || 'this product'}`;
+    } else {
+        warningEl.classList.add('hidden');
+    }
+};
+
 // 添加调试函数
 window.debugState = function() {
     console.log('=== DEBUG STATE ===');
@@ -467,7 +557,9 @@ window.debugState = function() {
         changeLanguage: typeof window.changeLanguage,
         setInjectionRoute: typeof window.setInjectionRoute,
         updateDosageDisplay: typeof window.updateDosageDisplay,
-        updateCalculatorTitleAndDesc: typeof window.updateCalculatorTitleAndDesc
+        updateCalculatorTitleAndDesc: typeof window.updateCalculatorTitleAndDesc,
+        setWeight: typeof window.setWeight,
+        checkWeightWarning: typeof window.checkWeightWarning
     });
     
     // 测试计算器标题元素

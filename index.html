@@ -51,123 +51,7 @@
             font-family: 'Noto Serif SC', serif;
         }
         
-        /* 半圆刻度盘样式 */
-        .semicircle-container {
-            position: relative;
-            width: 320px;
-            height: 160px;
-            margin: 0 auto;
-            overflow: hidden;
-        }
-        
-        .semicircle-dial {
-            position: absolute;
-            width: 320px;
-            height: 320px;
-            border-radius: 50%;
-            top: 0;
-            left: 0;
-            cursor: grab;
-            user-select: none;
-            z-index: 10;
-        }
-        
-        .semicircle-dial:active {
-            cursor: grabbing;
-        }
-        
-        .semicircle-track {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            top: 10px;
-            left: 10px;
-            background: linear-gradient(135deg, var(--medical-blue) 0%, var(--medical-green) 100%);
-        }
-        
-        .semicircle-center {
-            position: absolute;
-            width: 260px;
-            height: 260px;
-            border-radius: 50%;
-            top: 30px;
-            left: 30px;
-            background: white;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .scale-container {
-            position: absolute;
-            width: 320px;
-            height: 320px;
-            top: 0;
-            left: 0;
-        }
-        
-        .scale-line {
-            position: absolute;
-            width: 2px;
-            background: #374151;
-            top: 5px;
-            left: 50%;
-            transform-origin: 50% 155px;
-            border-radius: 1px;
-        }
-        
-        .scale-line.major {
-            width: 3px;
-            height: 20px;
-            background: var(--medical-blue);
-        }
-        
-        .scale-line.minor {
-            height: 12px;
-            opacity: 0.6;
-        }
-        
-        .scale-number {
-            position: absolute;
-            font-size: 12px;
-            font-weight: bold;
-            color: #374151;
-            top: 25px;
-            left: 50%;
-            transform-origin: 50% 140px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2px 4px;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .pointer {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 14px solid transparent;
-            border-right: 14px solid transparent;
-            border-top: 28px solid var(--medical-red);
-            z-index: 50;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
-        }
-        
-        .weight-display {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 15;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 16px 24px;
-            border-radius: 24px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
+        /* 删除所有半圆刻度盘相关的样式 */
         
         .product-card {
             background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
@@ -258,82 +142,11 @@
         
         /* 移动端优化 */
         @media (max-width: 768px) {
-            .semicircle-container {
-                width: 280px;
-                height: 140px;
-            }
-            
-            .semicircle-dial,
-            .scale-container {
-                width: 280px;
-                height: 280px;
-            }
-            
-            .semicircle-track {
-                width: 260px;
-                height: 260px;
-                top: 10px;
-                left: 10px;
-            }
-            
-            .semicircle-center {
-                width: 220px;
-                height: 220px;
-                top: 30px;
-                left: 30px;
-            }
-            
-            .scale-line {
-                transform-origin: 50% 135px;
-            }
-            
-            .scale-number {
-                transform-origin: 50% 125px;
-                font-size: 11px;
-            }
-            
-            .pointer {
-                border-left: 12px solid transparent;
-                border-right: 12px solid transparent;
-                border-top: 24px solid var(--medical-red);
-            }
-            
-            .weight-display {
-                bottom: 20px;
-                padding: 12px 20px;
-            }
+            /* 删除移动端刻度盘相关样式 */
         }
         
         @media (max-width: 480px) {
-            .semicircle-container {
-                width: 260px;
-                height: 130px;
-            }
-            
-            .semicircle-dial,
-            .scale-container {
-                width: 260px;
-                height: 260px;
-            }
-            
-            .semicircle-track {
-                width: 240px;
-                height: 240px;
-            }
-            
-            .semicircle-center {
-                width: 200px;
-                height: 200px;
-            }
-            
-            .scale-line {
-                transform-origin: 50% 125px;
-            }
-            
-            .scale-number {
-                transform-origin: 50% 115px;
-                font-size: 10px;
-            }
+            /* 删除移动端刻度盘相关样式 */
         }
         
         @keyframes pulse-glow {
@@ -485,7 +298,7 @@
         <div id="calculatorInterface" class="hidden">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold title-font text-gray-800 mb-4" id="calculatorTitle">D-Artepp Dosage Calculation</h2>
-                <p class="text-gray-600" id="calculatorDesc">Select patient weight by sliding the dial, system will automatically calculate recommended dosage</p>
+                <p class="text-gray-600" id="calculatorDesc">Enter patient weight, system will automatically calculate recommended dosage</p>
             </div>
             
             <!-- 注射途径选择（只对Artesun显示） -->
@@ -511,33 +324,19 @@
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <!-- 左侧：半圆刻度盘 -->
+                <!-- 左侧：简化后的体重输入区域 -->
                 <div class="glass-card rounded-xl p-8 hover-lift">
                     <h3 class="text-xl font-semibold title-font text-gray-800 mb-6 text-center" data-i18n="weightSelector">Weight Selector</h3>
                     
-                    <!-- 半圆刻度盘 -->
-                    <div class="relative mb-6">
-                        <div class="semicircle-container">
-                            <div class="pointer"></div>
-                            <div class="semicircle-dial" id="semicircleDial">
-                                <div class="semicircle-track"></div>
-                                <div class="semicircle-center"></div>
-                                <div class="scale-container" id="scaleContainer"></div>
-                            </div>
-                        </div>
-                        <div class="weight-display">
-                            <div id="currentWeight" class="text-3xl font-bold number-display text-gray-800">35.0</div>
-                            <div class="text-sm text-gray-600">kg</div>
-                        </div>
-                    </div>
-                    
                     <!-- 手动输入 -->
                     <div class="text-center mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="manualInput">Or enter weight manually</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="manualInput">Enter weight manually</label>
                         <div class="flex items-center justify-center space-x-2">
-                            <input type="number" id="manualWeight" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 number-display text-center" 
-                                   value="35" min="0.1" max="100" step="0.1">
-                            <span class="text-gray-600">kg</span>
+                            <input type="number" id="manualWeight" class="w-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 number-display text-center text-xl" 
+                                   value="35" min="0.1" max="100" step="0.1"
+                                   oninput="handleWeightInput(this.value)"
+                                   onchange="handleWeightInput(this.value)">
+                            <span class="text-gray-600 text-lg">kg</span>
                         </div>
                         <p class="text-xs text-gray-500 mt-1" id="weightRangeHint" data-i18n="weightRange">Range: 0-100kg</p>
                         <!-- 体重警告区域 -->
@@ -575,7 +374,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                             </svg>
                             <p class="text-lg font-medium mb-2" data-i18n="selectWeight">Please select weight</p>
-                            <p class="text-sm" data-i18n="selectWeightDesc">Slide the dial on the left to set patient weight</p>
+                            <p class="text-sm" data-i18n="selectWeightDesc">Enter weight to calculate recommended dosage</p>
                         </div>
                     </div>
                     
@@ -590,21 +389,53 @@
         </div>
     </main>
 
-    <!-- 页脚 
-    <footer class="bg-white/90 backdrop-blur-md border-t border-gray-200 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="text-center">
-                <p class="text-gray-600 text-sm" data-i18n="footerCopyright">© 2025 Medical Dosage Calculator. Professional medical tool for safe medication.</p>
-                <p class="text-gray-500 text-xs mt-2" data-i18n="footerDisclaimer">This tool is for reference only, please follow medical advice for actual medication.</p>
-                <button onclick="window.debugState()" class="mt-4 px-4 py-2 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                    Debug State
-                </button>
-            </div>
-        </div>
-    </footer>
-    -->
-    
+    <!-- 页脚 -->
     <!-- 只保留这一个JavaScript导入 -->
     <script type="module" src="index.js"></script>
+    
+    <!-- 添加简单的事件处理脚本 -->
+    <script>
+        // 体重输入处理函数
+        function handleWeightInput(value) {
+            // 解析输入值
+            let weight = parseFloat(value);
+            
+            // 验证输入
+            if (isNaN(weight) || weight < 0 || weight > 100) {
+                return; // 无效输入
+            }
+            
+            // 更新全局体重变量
+            window.currentWeight = weight;
+            
+            // 更新剂量计算
+            if (typeof window.updateDosageDisplay === 'function') {
+                window.updateDosageDisplay();
+            }
+        }
+        
+        // 快速设置体重函数
+        function setWeight(weight) {
+            // 更新输入框
+            const inputElement = document.getElementById('manualWeight');
+            if (inputElement) {
+                inputElement.value = weight;
+            }
+            
+            // 调用相同的处理函数
+            handleWeightInput(weight);
+        }
+        
+        // 页面加载后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置初始体重输入框值
+            if (window.currentWeight) {
+                const inputElement = document.getElementById('manualWeight');
+                if (inputElement) {
+                    inputElement.value = window.currentWeight;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
