@@ -348,13 +348,13 @@ window.selectProduct = function(product) {
     } else if (product === 'argesun' && window.argesunData) {
         window.selectedProduct = window.argesunData;
         console.log('Selected Argesun:', window.selectedProduct);
-        // 重要：设置Argesun默认体重为20
+        // 重要：设置Argesun默认体重为35
         window.currentWeight = 35;
         showCalculatorInterface();
     } else if (product === 'artesun' && window.artesunData) {
         window.selectedProduct = window.artesunData;
         console.log('Selected Artesun:', window.selectedProduct);
-        // 重要：设置Artesun默认体重为20
+        // 重要：设置Artesun默认体重为35
         window.currentWeight = 35;
         showCalculatorInterface();
     } else {
