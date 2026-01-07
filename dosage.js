@@ -322,7 +322,7 @@ export function findArgesunDosage(weight) {
     const exactInjectionVolume = totalDose / concentration;
     
     // 应用新的注射体积计算规则：向上取整到个位数
-    const roundedInjectionVolume = Math.ceil(exactInjectionVolume);
+    const roundedInjectionVolume = Math.ceil(exactInjectionVolume * 2) / 2;
     
     return {
         weight: weight,
