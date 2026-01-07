@@ -25,7 +25,7 @@ export const translations = {
         routeSelectionInstruction: "Select IV for slow intravenous injection or IM for intramuscular injection",
         // 通用
         weightSelector: "Weight Selector",
-        manualInput: "Or enter weight manually",
+        manualInput: "Key in patient weight",
         weightRange: "Range: 0-100kg",
         weightRangeDartepp: "Range: 5-100kg", // D-Artepp专用
         dosagePlan: "Recommended Dosage Plan",
@@ -131,7 +131,7 @@ export const translations = {
         routeSelectionInstruction: "选择IV进行缓慢静脉注射或选择IM进行肌肉注射",
         // 通用
         weightSelector: "体重选择器",
-        manualInput: "或直接输入体重",
+        manualInput: "输入患者体重",
         weightRange: "范围: 0-100kg",
         weightRangeDartepp: "范围: 5-100kg", // D-Artepp专用
         dosagePlan: "推荐剂量方案",
@@ -237,7 +237,7 @@ export const translations = {
         routeSelectionInstruction: "Sélectionnez IV pour injection intraveineuse lente ou IM pour injection intramusculaire",
         // 通用
         weightSelector: "Sélecteur de Poids",
-        manualInput: "Ou saisir manuellement le poids",
+        manualInput: "Saisir le poids du patient",
         weightRange: "Plage: 0-100kg",
         weightRangeDartepp: "Plage: 5-100kg", // D-Artepp专用
         dosagePlan: "Plan de Dosage Recommandé",
