@@ -187,6 +187,14 @@
             color: #dc2626;
             flex-shrink: 0;
         }
+
+        /* 新增：产品图片样式 */
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 保持图片比例，完整显示在容器内 */
+            border-radius: 50%; /* 圆形显示 */
+        }
     </style>
 </head>
 <body>
@@ -217,15 +225,12 @@
                         </button>
                         <div id="languageDropdown" class="language-dropdown">
                             <div class="language-option" data-lang="en">
-                                <span>🇺🇸</span>
                                 <span>English</span>
                             </div>
                             <div class="language-option" data-lang="zh">
-                                <span>🇨🇳</span>
                                 <span>中文</span>
                             </div>
                             <div class="language-option" data-lang="fr">
-                                <span>🇫🇷</span>
                                 <span>Français</span>
                             </div>
                         </div>
@@ -283,9 +288,7 @@
                      onclick="selectProduct('argesun')">
                     <div class="text-center">
                         <div class="w-16 h-16 medical-gradient rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                            </svg>
+                            <img src="argesun.png" alt="Argesun" class="product-image">
                         </div>
                         <h3 class="text-xl font-bold text-gray-800 mb-2">Argesun</h3>
                         <p class="text-gray-600 mb-4" data-i18n="argesunDesc">Artesunate Injection Dosage Calculator</p>
