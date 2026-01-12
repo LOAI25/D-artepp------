@@ -32,7 +32,6 @@
         }
         
         .medical-gradient {
-            /*background-color: var(--logo-beige);*/
             background: linear-gradient(135deg, var(--logo-beige) 0%, var(--logo-beige2) 100%);
         }
         
@@ -53,8 +52,6 @@
         .title-font {
             font-family: 'Noto Serif SC', serif;
         }
-        
-        /* 删除所有半圆刻度盘相关的样式 */
         
         .product-card {
             background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
@@ -138,18 +135,8 @@
         }
         
         /* D-Artepp模式下隐藏小于10kg的按钮 */
-        .dartepp-mode .quick-select-button[onclick*="setWeight(10)"],
         .dartepp-mode .quick-select-button[data-weight="10"] {
             display: none !important;
-        }
-        
-        /* 移动端优化 */
-        @media (max-width: 768px) {
-            /* 删除移动端刻度盘相关样式 */
-        }
-        
-        @media (max-width: 480px) {
-            /* 删除移动端刻度盘相关样式 */
         }
         
         @keyframes pulse-glow {
@@ -193,10 +180,9 @@
 
         /* 核心修改：更扁的自然椭圆形logo容器样式 */
         .product-image-container {
-            /* 更扁的椭圆：宽度200px，高度100px（宽高比2:1，扁度更明显） */
             width: 150px;
             height: 75px;
-            border-radius: 50%; /* 百分比圆角实现自然椭圆 */
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -206,10 +192,9 @@
         
         /* 双图片容器的更扁椭圆样式 */
         .product-image-dual-container {
-            /* 小扁椭圆：宽度100px，高度50px（同比例） */
             width: 130px;
             height: 65px;
-            border-radius: 50%; /* 关键：百分比圆角保持自然椭圆 */
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -217,16 +202,82 @@
         }
         
         .product-image {
-            width: 220%; /* 图片放大到容器90%，保证清晰 */
+            width: 220%;
             height: 220%;
-            object-fit: contain; /* 保持图片比例 */
+            object-fit: contain;
         }
         
-        /* 双图片里的小图片样式 */
         .product-image-small {
-            width: 250%; /* 小椭圆内的图片放大 */
+            width: 250%;
             height: 250%;
             object-fit: contain;
+        }
+
+        /* 新增：计算器页面的药品图片展示样式 */
+        .calculator-product-image-container {
+            width: 180px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--logo-beige) 0%, var(--logo-beige2) 100%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .calculator-product-image {
+            width: 200%;
+            height: 200%;
+            object-fit: contain;
+        }
+
+        .calculator-product-dual-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .calculator-product-small-container {
+            width: 100px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--logo-beige) 0%, var(--logo-beige2) 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        /* 剂量结果卡片样式 */
+        .dosage-card {
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+        }
+        
+        .dosage-card-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .dosage-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--medical-blue);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .dosage-note {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -245,7 +296,6 @@
                 </div>
                 <div class="flex space-x-6 items-center">
                     <a href="index.html" class="text-blue-600 font-medium hover:text-blue-800 transition-colors" data-i18n="navCalculator">Calculator</a>
-                    <!-- 已删除历史记录链接 -->
                     <a href="medications.html" class="text-gray-600 hover:text-blue-600 transition-colors" data-i18n="navMedications">Medications</a>
                     
                     <!-- 语言切换器 -->
@@ -285,35 +335,25 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                 <!-- D-Artepp 产品卡片 -->
-                <div class="product-card glass-card rounded-xl p-6 cursor-pointer" 
-                data-product="dartepp" 
-                onclick="selectProduct('dartepp')">
-                <div class="text-center">
-                    <!-- 双图片容器 - 更扁的自然椭圆 -->
-                    <div class="flex justify-center items-center gap-3 mb-4">
-                        <!-- 图片1 - 更扁的自然椭圆背景 -->
-                        <div class="product-image-dual-container medical-gradient">
-                            <img src="dartepp1.png" alt="D-Artepp 1" class="product-image-small">
+                <div class="product-card glass-card rounded-xl p-6 cursor-pointer" data-product="dartepp">
+                    <div class="text-center">
+                        <div class="flex justify-center items-center gap-3 mb-4">
+                            <div class="product-image-dual-container medical-gradient">
+                                <img src="dartepp1.png" alt="D-Artepp 1" class="product-image-small">
+                            </div>
+                            <div class="product-image-dual-container medical-gradient">
+                                <img src="dartepp2.png" alt="D-Artepp 2" class="product-image-small">
+                            </div>
                         </div>
-                        
-                        <!-- 图片2 - 更扁的自然椭圆背景 -->
-                        <div class="product-image-dual-container medical-gradient">
-                            <img src="dartepp2.png" alt="D-Artepp 2" class="product-image-small">
-                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">D-Artepp</h3>
+                        <p class="text-gray-600 mb-4" data-i18n="darteppDesc">Antimalarial Dosage Calculator</p>
+                        <div class="text-sm text-blue-600 font-medium" data-i18n="recommended">Recommended</div>
                     </div>
-                    
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">D-Artepp</h3>
-                    <p class="text-gray-600 mb-4" data-i18n="darteppDesc">Antimalarial Dosage Calculator</p>
-                    <div class="text-sm text-blue-600 font-medium" data-i18n="recommended">Recommended</div>
                 </div>
-            </div>
                 
                 <!-- Artesun 产品卡片 -->
-                <div class="product-card glass-card rounded-xl p-6 cursor-pointer" 
-                     data-product="artesun" 
-                     onclick="selectProduct('artesun')">
+                <div class="product-card glass-card rounded-xl p-6 cursor-pointer" data-product="artesun">
                     <div class="text-center">
-                        <!-- 更扁的自然椭圆背景容器 -->
                         <div class="product-image-container medical-gradient mb-4">
                             <img src="artesun.png" alt="Argesun" class="product-image">
                         </div>
@@ -323,11 +363,8 @@
                 </div>
                 
                 <!-- Argesun 产品卡片 -->
-                <div class="product-card glass-card rounded-xl p-6 cursor-pointer" 
-                     data-product="argesun" 
-                     onclick="selectProduct('argesun')">
+                <div class="product-card glass-card rounded-xl p-6 cursor-pointer" data-product="argesun">
                     <div class="text-center">
-                        <!-- 更扁的自然椭圆背景容器 -->
                         <div class="product-image-container medical-gradient mb-4">
                             <img src="argesun.png" alt="Argesun" class="product-image">
                         </div>
@@ -349,15 +386,11 @@
             <div id="injectionRouteSelector" class="hidden mb-8 max-w-lg mx-auto">
                 <h3 class="text-xl font-semibold title-font text-gray-800 mb-4 text-center" data-i18n="injectionRoute">注射途径</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button onclick="setInjectionRoute('iv')" id="ivRouteBtn" 
-                            class="route-btn bg-blue-600 text-white px-6 py-4 rounded-xl hover:bg-blue-700 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
-                            data-route="iv">
+                    <button id="ivRouteBtn" class="route-btn bg-blue-600 text-white px-6 py-4 rounded-xl hover:bg-blue-700 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center" data-route="iv">
                         <div class="font-bold text-lg mb-2" data-i18n="ivRoute">Intravenous (IV)</div>
                         <div class="text-sm opacity-90" data-i18n="ivRouteDesc">10 mg/ml · Slow injection 1-2 min</div>
                     </button>
-                    <button onclick="setInjectionRoute('im')" id="imRouteBtn"
-                            class="route-btn bg-white border-2 border-gray-300 text-gray-700 px-6 py-4 rounded-xl hover:bg-gray-50 hover:border-green-500 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center"
-                            data-route="im">
+                    <button id="imRouteBtn" class="route-btn bg-white border-2 border-gray-300 text-gray-700 px-6 py-4 rounded-xl hover:bg-gray-50 hover:border-green-500 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center" data-route="im">
                         <div class="font-bold text-lg mb-2" data-i18n="imRoute">Intramuscular (IM)</div>
                         <div class="text-sm opacity-90" data-i18n="imRouteDesc">20 mg/ml · Anterior thigh injection</div>
                     </button>
@@ -370,16 +403,17 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <!-- 左侧：简化后的体重输入区域 -->
                 <div class="glass-card rounded-xl p-8 hover-lift">
-                    <h3 class="text-xl font-semibold title-font text-gray-800 mb-6 text-center" data-i18n="weightSelector">Weight Selector</h3>
+                    <h3 class="text-xl font-semibold title-font text-gray-800 mb-2 text-center" data-i18n="weightSelector">Weight Selector</h3>
+                    
+                    <!-- 新增：药品图片展示区域 -->
+                    <div id="calculatorProductImage" class="mb-6"></div>
                     
                     <!-- 手动输入 -->
                     <div class="text-center mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="manualInput">Key in patient weight</label>
                         <div class="flex items-center justify-center space-x-2">
                             <input type="number" id="manualWeight" class="w-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 number-display text-center text-xl" 
-                                   value="35" min="0" max="100" step="1"
-                                   oninput="handleWeightInput(this.value)"
-                                   onchange="handleWeightInput(this.value)">
+                                   value="35" min="0" max="100" step="1">
                             <span class="text-gray-600 text-lg">kg</span>
                         </div>
                         <p class="text-xs text-gray-500 mt-1" id="weightRangeHint" data-i18n="weightRange">Range: 0-100kg</p>
@@ -396,14 +430,14 @@
                     
                     <!-- 快速选择按钮 -->
                     <div class="grid grid-cols-4 gap-2">
-                        <button onclick="setWeight(10)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">10kg</button>
-                        <button onclick="setWeight(20)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">20kg</button>
-                        <button onclick="setWeight(30)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">30kg</button>
-                        <button onclick="setWeight(40)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">40kg</button>
-                        <button onclick="setWeight(50)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">50kg</button>
-                        <button onclick="setWeight(60)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">60kg</button>
-                        <button onclick="setWeight(70)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">70kg</button>
-                        <button onclick="setWeight(80)" class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">80kg</button>
+                        <button class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors" data-weight="10">10kg</button>
+                        <button class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors" data-weight="20">20kg</button>
+                        <button class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors" data-weight="30">30kg</button>
+                        <button class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors" data-weight="40">40kg</button>
+                        <button class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors" data-weight="50">50kg</button>
+                        <button class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors" data-weight="60">60kg</button>
+                        <button class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors" data-weight="70">70kg</button>
+                        <button class="quick-select-button px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors" data-weight="80">80kg</button>
                     </div>
                 </div>
                 
@@ -412,13 +446,37 @@
                     <h3 class="text-xl font-semibold title-font text-gray-800 mb-6 dosage-plan-title" data-i18n="dosagePlan">Recommended Dosage Plan</h3>
                     
                     <div id="dosageResult" class="space-y-4">
-                        <!-- 结果将通过JavaScript动态生成 -->
-                        <div class="text-center text-gray-500 py-8">
+                        <!-- 初始提示 -->
+                        <div id="initialDosagePrompt" class="text-center text-gray-500 py-8">
                             <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                             </svg>
                             <p class="text-lg font-medium mb-2" data-i18n="selectWeight">Please select weight</p>
                             <p class="text-sm" data-i18n="selectWeightDesc">Enter weight to calculate recommended dosage</p>
+                        </div>
+                        
+                        <!-- 动态剂量结果（初始隐藏） -->
+                        <div id="dynamicDosageResult" class="hidden space-y-4">
+                            <div class="dosage-card">
+                                <div class="dosage-card-title">First Dose (0h)</div>
+                                <div class="dosage-value" id="firstDoseValue">0 mg</div>
+                                <div class="dosage-note" id="firstDoseNote">Administer immediately</div>
+                            </div>
+                            <div class="dosage-card">
+                                <div class="dosage-card-title">Second Dose (12h)</div>
+                                <div class="dosage-value" id="secondDoseValue">0 mg</div>
+                                <div class="dosage-note" id="secondDoseNote">12 hours after first dose</div>
+                            </div>
+                            <div class="dosage-card">
+                                <div class="dosage-card-title">Third Dose (24h)</div>
+                                <div class="dosage-value" id="thirdDoseValue">0 mg</div>
+                                <div class="dosage-note" id="thirdDoseNote">24 hours after first dose</div>
+                            </div>
+                            <div class="dosage-card">
+                                <div class="dosage-card-title">Fourth Dose (48h)</div>
+                                <div class="dosage-value" id="fourthDoseValue">0 mg</div>
+                                <div class="dosage-note" id="fourthDoseNote">48 hours after first dose</div>
+                            </div>
                         </div>
                     </div>
                     
@@ -433,53 +491,7 @@
         </div>
     </main>
 
-    <!-- 页脚 -->
-    <!-- 只保留这一个JavaScript导入 -->
+    <!-- 仅保留模块化脚本导入 -->
     <script type="module" src="index.js"></script>
-    
-    <!-- 添加简单的事件处理脚本 -->
-    <script>
-        // 体重输入处理函数
-        function handleWeightInput(value) {
-            // 解析输入值
-            let weight = parseFloat(value);
-            
-            // 验证输入
-            if (isNaN(weight) || weight < 0 || weight > 100) {
-                return; // 无效输入
-            }
-            
-            // 更新全局体重变量
-            window.currentWeight = weight;
-            
-            // 更新剂量计算
-            if (typeof window.updateDosageDisplay === 'function') {
-                window.updateDosageDisplay();
-            }
-        }
-        
-        // 快速设置体重函数
-        function setWeight(weight) {
-            // 更新输入框
-            const inputElement = document.getElementById('manualWeight');
-            if (inputElement) {
-                inputElement.value = weight;
-            }
-            
-            // 调用相同的处理函数
-            handleWeightInput(weight);
-        }
-        
-        // 页面加载后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 设置初始体重输入框值
-            if (window.currentWeight) {
-                const inputElement = document.getElementById('manualWeight');
-                if (inputElement) {
-                    inputElement.value = window.currentWeight;
-                }
-            }
-        });
-    </script>
 </body>
 </html>

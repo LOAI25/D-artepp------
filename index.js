@@ -1,8 +1,24 @@
-// index.js - 主入口文件
-// 版本：v8.9
+// index.js - 主入口文件 (模块化重构版)
+// 版本：v8.9+ (整合图片加载 + 模块化兼容)
 // 日期：2024-01-20
 
-// 全局变量声明
+// ========== 1. 新增：产品图片配置 ==========
+const productImages = {
+    dartepp: {
+        type: 'dual',
+        images: ['dartepp1.png', 'dartepp2.png'] // 根据实际路径调整
+    },
+    artesun: {
+        type: 'single',
+        image: 'artesun.png'
+    },
+    argesun: {
+        type: 'single',
+        image: 'argesun.png'
+    }
+};
+
+// ========== 2. 全局变量声明 (模块化兼容：挂载到window) ==========
 window.currentWeight = 35.0;
 window.selectedProduct = null;
 window.isDragging = false;
@@ -11,14 +27,81 @@ window.currentRotation = 0;
 window.currentLanguage = 'en';
 window.injectionRoute = 'iv';
 
-// 导入模块
+// ========== 3. 导入模块 (保留原有导入逻辑) ==========
 import * as translationsModule from './translations.js';
 import * as productsModule from './products.js';
 import * as dialModule from './dial.js';
 import * as dosageModule from './dosage.js';
 import * as languageModule from './language.js';
 
-// 初始化所有模块的全局变量依赖
+// ========== 4. 新增：图片加载核心函数 ==========
+/**
+ * 加载产品图片到计算器界面
+ * @param {string} productId - 产品ID (dartepp/artesun/argesun)
+ */
+function loadProductImage(productId) {
+    const container = document.getElementById('calculatorProductImage');
+    if (!container) return;
+    
+    container.innerHTML = ''; // 清空原有内容
+    const config = productImages[productId];
+    
+    if (!config) {
+        container.innerHTML = '<p class="text-center text-red-500">No image found</p>';
+        return;
+    }
+
+    try {
+        if (config.type === 'dual') {
+            // 双图片渲染 (D-Artepp)
+            const dualDiv = document.createElement('div');
+            dualDiv.className = 'calculator-product-dual-container';
+            
+            config.images.forEach(imgSrc => {
+                const smallDiv = document.createElement('div');
+                smallDiv.className = 'calculator-product-small-container';
+                
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = `${productId} image`;
+                img.className = 'calculator-product-image';
+                
+                // 图片加载失败容错
+                img.onerror = () => {
+                    img.src = 'https://via.placeholder.com/100x50?text=Image+Not+Found';
+                    console.error('图片加载失败：', imgSrc);
+                };
+                
+                smallDiv.appendChild(img);
+                dualDiv.appendChild(smallDiv);
+            });
+            container.appendChild(dualDiv);
+
+        } else if (config.type === 'single') {
+            // 单图片渲染 (Artesun/Argesun)
+            const singleDiv = document.createElement('div');
+            singleDiv.className = 'calculator-product-image-container';
+            
+            const img = document.createElement('img');
+            img.src = config.image;
+            img.alt = `${productId} image`;
+            img.className = 'calculator-product-image';
+            
+            img.onerror = () => {
+                img.src = 'https://via.placeholder.com/180x90?text=Image+Not+Found';
+                console.error('图片加载失败：', config.image);
+            };
+            
+            singleDiv.appendChild(img);
+            container.appendChild(singleDiv);
+        }
+    } catch (e) {
+        console.error('加载图片出错：', e);
+        container.innerHTML = '<p class="text-center text-red-500">Failed to load image</p>';
+    }
+}
+
+// ========== 5. 初始化全局依赖 (保留原有逻辑 + 新增图片加载初始化) ==========
 function initializeGlobalDependencies() {
     console.log('Initializing global dependencies...');
     
@@ -62,15 +145,16 @@ function initializeGlobalDependencies() {
     window.setWeight = function(weight) {
         handleQuickWeightSelect(weight);
     };
+
+    // 新增：导出图片加载函数到全局
+    window.loadProductImage = loadProductImage;
     
-    console.log('Global dependencies initialized');
+    console.log('Global dependencies initialized (including image loader)');
 }
 
-// ==================== 核心初始化 ====================
-
-// 页面加载完成后初始化
+// ========== 6. 核心初始化 (保留原有逻辑 + 图片功能整合) ==========
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Medical Dosage Calculator loaded');
+    console.log('Medical Dosage Calculator loaded (v8.9+)');
     
     // 确保全局翻译数据可用（先于模块初始化）
     window.translations = translationsModule.translations || {};
@@ -102,6 +186,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (dialModule.updateWeightDisplay) {
             dialModule.updateWeightDisplay();
         }
+        // 初始化图片（如果已有选中产品）
+        if (window.selectedProduct) {
+            loadProductImage(window.selectedProduct.id);
+        }
     }
     
     // 设置事件监听器
@@ -113,9 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 });
 
-// ==================== 事件处理 ====================
-
-// 设置事件监听器
+// ========== 7. 事件处理 (保留原有逻辑 + 优化事件绑定) ==========
 function setupEventListeners() {
     console.log('Setting up event listeners...');
     
@@ -163,7 +249,7 @@ function setupEventListeners() {
     }
 }
 
-// 快速选择体重的核心处理函数
+// 快速选择体重的核心处理函数 (保留原有逻辑)
 function handleQuickWeightSelect(weight) {
     console.log('Handling quick weight select:', weight);
     
@@ -211,34 +297,28 @@ function handleQuickWeightSelect(weight) {
     console.log('Quick weight select completed, currentWeight:', window.currentWeight);
 }
 
-// 绑定产品选择按钮
+// 绑定产品选择按钮 (优化：移除内联onclick依赖 + 整合图片加载)
 function bindProductSelectionButtons() {
     const productCards = document.querySelectorAll('.product-card');
     console.log(`Found ${productCards.length} product cards`);
     
     productCards.forEach(card => {
         const productId = card.getAttribute('data-product');
-        const onclickAttr = card.getAttribute('onclick');
         
-        console.log(`Card: ${productId}, onclick: ${onclickAttr}`);
+        console.log(`Card: ${productId}`);
         
         // 移除现有的click事件监听器（避免重复绑定）
         card.removeEventListener('click', handleProductCardClick);
         
-        // 添加新的click事件监听器
+        // 添加新的click事件监听器（核心：替代内联onclick）
         card.addEventListener('click', handleProductCardClick);
         
-        // 确保HTML的onclick属性也正常工作
-        if (onclickAttr && onclickAttr.includes('selectProduct')) {
-            // 保留原有的onclick
-        } else {
-            // 如果没有onclick属性，添加一个
-            card.setAttribute('onclick', `window.selectProduct('${productId}')`);
-        }
+        // 移除HTML内联onclick（避免冲突）
+        card.removeAttribute('onclick');
     });
 }
 
-// 处理产品卡片点击
+// 处理产品卡片点击 (新增：整合图片加载)
 function handleProductCardClick(event) {
     const card = event.currentTarget;
     const productId = card.getAttribute('data-product');
@@ -251,17 +331,26 @@ function handleProductCardClick(event) {
         
         // 调用全局选择产品函数
         window.selectProduct(productId);
+        
+        // 新增：加载对应产品图片
+        loadProductImage(productId);
+        
+        // 产品卡片选中状态
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        card.classList.add('selected');
     }
 }
 
-// 绑定快速选择按钮
+// 绑定快速选择按钮 (保留原有逻辑)
 function bindQuickSelectButtons() {
-    const quickSelectButtons = document.querySelectorAll('button[onclick^="setWeight"]');
+    const quickSelectButtons = document.querySelectorAll('.quick-select-button');
     console.log(`Found ${quickSelectButtons.length} quick select buttons`);
     
     quickSelectButtons.forEach(button => {
         button.addEventListener('click', function(event) {
-            // 阻止默认的onclick先执行（避免重复调用）
+            // 阻止默认行为
             event.preventDefault();
             event.stopPropagation();
             
@@ -273,10 +362,13 @@ function bindQuickSelectButtons() {
                 handleQuickWeightSelect(weight); // 调用统一的处理函数
             }
         });
+        
+        // 移除内联onclick（模块化兼容）
+        button.removeAttribute('onclick');
     });
 }
 
-// 处理手动体重输入
+// 处理手动体重输入 (保留原有逻辑)
 function handleManualWeightInput(event) {
     const input = event.target;
     const weight = parseFloat(input.value);
@@ -300,6 +392,7 @@ function handleManualWeightInput(event) {
     }
 }
 
+// 处理手动体重回车事件 (保留原有逻辑)
 function handleManualWeightKeyDown(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
@@ -326,9 +419,7 @@ function handleManualWeightKeyDown(event) {
     }
 }
 
-// ==================== 产品选择功能 ====================
-
-// 产品选择功能 - 这个函数会被HTML中的onclick调用
+// ========== 8. 产品选择功能 (保留原有逻辑 + 模块化兼容) ==========
 window.selectProduct = function(product) {
     console.log('selectProduct called with:', product);
     
@@ -362,7 +453,7 @@ window.selectProduct = function(product) {
     }
 }
 
-// 显示计算器界面
+// 显示计算器界面 (保留原有逻辑 + 图片加载)
 function showCalculatorInterface() {
     const productSelection = document.getElementById('productSelection');
     const calculatorInterface = document.getElementById('calculatorInterface');
@@ -377,6 +468,9 @@ function showCalculatorInterface() {
         
         // 更新计算器标题和描述（先做这个，确保界面显示正确）
         window.updateCalculatorTitleAndDesc();
+        
+        // 新增：加载产品图片
+        loadProductImage(window.selectedProduct.id);
         
         // 更新手动体重输入框的值
         const weightInput = document.getElementById('manualWeight');
@@ -436,7 +530,7 @@ function showCalculatorInterface() {
     }
 }
 
-// 显示产品选择界面
+// 显示产品选择界面 (保留原有逻辑)
 function showProductSelection() {
     const productSelection = document.getElementById('productSelection');
     const calculatorInterface = document.getElementById('calculatorInterface');
@@ -453,9 +547,7 @@ function showProductSelection() {
     }
 }
 
-// ==================== 更新计算器标题和描述 ====================
-
-// 更新计算器标题和描述 - 导出到全局
+// ========== 9. 更新计算器标题和描述 (保留原有逻辑) ==========
 window.updateCalculatorTitleAndDesc = function() {
     if (!window.selectedProduct || !window.translations) {
         console.warn('Cannot update calculator title: missing product or translations');
@@ -490,9 +582,7 @@ window.updateCalculatorTitleAndDesc = function() {
     console.log('Updated description:', calculatorDesc.textContent);
 };
 
-// ==================== 全局函数导出 ====================
-
-// 导出到window对象，供HTML调用
+// ========== 10. 全局函数导出 (保留原有逻辑 + 模块化兼容) ==========
 window.changeLanguage = function(lang) {
     console.log('changeLanguage called:', lang);
     if (languageModule.changeLanguage) {
@@ -521,7 +611,7 @@ window.setInjectionRoute = function(route) {
     }
 };
 
-// 体重警告检查函数
+// 体重警告检查函数 (保留原有逻辑)
 window.checkWeightWarning = function() {
     const warningEl = document.getElementById('weightWarning');
     const warningMsg = document.getElementById('warningMessage');
@@ -539,7 +629,7 @@ window.checkWeightWarning = function() {
     }
 };
 
-// 添加调试函数
+// 添加调试函数 (保留原有逻辑)
 window.debugState = function() {
     console.log('=== DEBUG STATE ===');
     console.log('Global variables:', {
@@ -550,7 +640,8 @@ window.debugState = function() {
         translations: window.translations ? 'loaded' : 'missing',
         darteppData: window.darteppData ? 'loaded' : 'missing',
         argesunData: window.argesunData ? 'loaded' : 'missing',
-        artesunData: window.artesunData ? 'loaded' : 'missing'
+        artesunData: window.artesunData ? 'loaded' : 'missing',
+        imageLoader: typeof window.loadProductImage // 新增：调试图片加载函数
     });
     console.log('Available functions:', {
         selectProduct: typeof window.selectProduct,
@@ -559,7 +650,8 @@ window.debugState = function() {
         updateDosageDisplay: typeof window.updateDosageDisplay,
         updateCalculatorTitleAndDesc: typeof window.updateCalculatorTitleAndDesc,
         setWeight: typeof window.setWeight,
-        checkWeightWarning: typeof window.checkWeightWarning
+        checkWeightWarning: typeof window.checkWeightWarning,
+        loadProductImage: typeof window.loadProductImage // 新增：调试图片加载函数
     });
     
     // 测试计算器标题元素
@@ -568,6 +660,7 @@ window.debugState = function() {
     console.log('Calculator elements:', {
         calculatorTitle: calculatorTitle ? 'found' : 'not found',
         calculatorDesc: calculatorDesc ? 'found' : 'not found',
+        calculatorProductImage: document.getElementById('calculatorProductImage') ? 'found' : 'not found', // 新增：调试图片容器
         calculatorVisible: document.getElementById('calculatorInterface') && 
                          !document.getElementById('calculatorInterface').classList.contains('hidden')
     });
@@ -575,4 +668,21 @@ window.debugState = function() {
     console.log('=== END DEBUG ===');
 };
 
-console.log('Medical Dosage Calculator主脚本已加载');
+// ========== 11. 注射途径按钮事件绑定 (新增：模块化兼容) ==========
+document.addEventListener('DOMContentLoaded', () => {
+    // 绑定注射途径按钮事件（替代内联onclick）
+    const ivBtn = document.getElementById('ivRouteBtn');
+    const imBtn = document.getElementById('imRouteBtn');
+    
+    if (ivBtn) {
+        ivBtn.addEventListener('click', () => window.setInjectionRoute('iv'));
+        ivBtn.removeAttribute('onclick');
+    }
+    
+    if (imBtn) {
+        imBtn.addEventListener('click', () => window.setInjectionRoute('im'));
+        imBtn.removeAttribute('onclick');
+    }
+});
+
+console.log('Medical Dosage Calculator主脚本已加载 (v8.9+ 模块化重构版)');
