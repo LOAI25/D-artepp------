@@ -6,15 +6,15 @@
 const productImages = {
     dartepp: {
         type: 'dual',
-        images: ['dartepp1.png', 'dartepp2.png'] // 根据实际路径调整
+        images: ['dartepppack1.png', 'dartepppack2.png'] // 根据实际路径调整
     },
     artesun: {
         type: 'single',
-        image: 'artesun.png'
+        image: 'artesunpackage.png'
     },
     argesun: {
         type: 'single',
-        image: 'argesun.png'
+        image: 'argesunpack.png'
     }
 };
 
