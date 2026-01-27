@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>药品信息 - D-Arteapp 医疗剂量计算器</title>
+    <title>药品信息 - Guilin Pharma 医疗剂量计算器</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -15,6 +15,8 @@
             --medical-red: #dc2626;
             --bg-light: #f8fafc;
             --text-dark: #1f2937;
+            --logo-beige: #d0eaef; 
+            --logo-beige2: #89dff0;
         }
         
         body {
@@ -87,6 +89,64 @@
         .dosage-table tr:hover {
             background-color: #f9fafb;
         }
+        
+        .product-type-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+        }
+        
+        .injection-badge {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        
+        .tablet-badge {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .active {
+            max-height: 1000px;
+        }
+
+        .nav-logo-gradient {
+            background: linear-gradient(135deg, var(--logo-beige) 0%, var(--logo-beige2) 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 商标样式优化 */
+        .trademark-tag {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            background-color: #eff6ff;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            font-size: 0.75rem;
+            color: #1e40af;
+        }
+        
+        /* 产品差异化标识 */
+        .artesun-badge {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        
+        .argesun-badge {
+            background-color: #bfdbfe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
     </style>
 </head>
 <body>
@@ -95,16 +155,16 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 medical-gradient rounded-lg flex items-center justify-center">
+                    <div class="w-10 h-10 nav-logo-gradient rounded-lg flex items-center justify-center shadow-sm">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 7.172V5L8 4z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-xl font-bold title-font text-gray-800">医疗剂量计算器</h1>
+                    <h1 class="text-xl font-bold title-font text-gray-800" data-i18n="appTitle">Medical Dosage Calculator</h1>
                 </div>
-                <div class="flex space-x-6">
-                    <a href="index.html" class="text-gray-600 hover:text-blue-600 transition-colors">计算器</a>
-                    <a href="medications.html" class="text-blue-600 font-medium hover:text-blue-800 transition-colors">药品信息</a>
+                <div class="flex space-x-6 items-center">
+                    <a href="index.html" class="text-gray-600 hover:text-blue-600 transition-colors" data-i18n="navCalculator">Calculator</a>
+                    <a href="medications.html" class="nav-current text-blue-600 font-medium hover:text-blue-800 transition-colors" data-i18n="navMedications">Medications</a>
                 </div>
             </div>
         </div>
@@ -115,227 +175,618 @@
         <!-- 页面标题 -->
         <div class="mb-8">
             <h2 class="text-3xl font-bold title-font text-gray-800 mb-2">药品信息</h2>
-            <p class="text-gray-600">了解D-Arteapp产品的详细信息和使用说明</p>
+            <p class="text-gray-600">抗疟疾药品详细信息和使用说明</p>
         </div>
 
-        <!-- D-Arteapp 产品信息 -->
-        <div class="glass-card rounded-xl p-8 mb-8 hover-lift">
-            <div class="flex items-center mb-6">
-                <div class="w-16 h-16 medical-gradient rounded-full flex items-center justify-center mr-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 7.172V5L8 4z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-2xl font-bold title-font text-gray-800">D-Arteapp</h3>
-                    <p class="text-gray-600">抗疟疾药物</p>
-                </div>
+        <!-- 药品筛选 -->
+        <div class="glass-card rounded-xl p-6 mb-8 hover-lift">
+            <h3 class="text-lg font-semibold title-font text-gray-800 mb-4">产品类型筛选</h3>
+            <div class="flex flex-wrap gap-3">
+                <button class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors active-filter" data-filter="all">
+                    全部产品
+                </button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors" data-filter="injection">
+                    注射剂
+                </button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors" data-filter="tablet">
+                    口服片剂
+                </button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors" data-filter="dispersible">
+                    可分散片剂
+                </button>
             </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- 产品描述 -->
-                <div>
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4">产品描述</h4>
-                    <div class="space-y-4 text-gray-700">
-                        <p>
-                            D-Arteapp是一种复合抗疟疾药物，含有青蒿素衍生物和哌喹两种有效成分。
-                            该产品具有快速起效、疗程短、副作用小等优点，是目前临床上广泛使用的抗疟疾药物。
-                        </p>
-                        <p>
-                            产品分为两种剂型：D-ARTEPP Dispersible（可分散片）和D-ARTEPP（普通片），
-                            适用于不同年龄段和体重的患者，确保用药安全和疗效。
-                        </p>
-                    </div>
-                    
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4 mt-8">适应症</h4>
-                    <ul class="list-disc list-inside text-gray-700 space-y-2">
-                        <li>恶性疟原虫引起的单纯性疟疾</li>
-                        <li>间日疟原虫引起的单纯性疟疾</li>
-                        <li>三日疟原虫引起的单纯性疟疾</li>
-                        <li>卵形疟原虫引起的单纯性疟疾</li>
-                    </ul>
-                    
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4 mt-8">注意事项</h4>
-                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                        <div class="flex items-start">
-                            <svg class="w-5 h-5 text-amber-600 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </div>
+
+        <!-- 药品列表 -->
+        <div class="space-y-6 mb-12">
+            <!-- Artesun® 注射用青蒿琥酯 -->
+            <div class="glass-card rounded-xl p-6 hover-lift medication-card" data-type="injection">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <div class="text-sm text-amber-800">
-                                <p class="font-medium mb-1">用药提醒</p>
-                                <p>请严格按照医嘱使用，不可随意增减剂量。如出现严重不良反应，请立即就医。</p>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold title-font text-gray-800">注射用青蒿琥酯 <span class="text-blue-600">(Artesun®)</span></h3>
+                            <div class="flex items-center mt-1 flex-wrap gap-2">
+                                <span class="product-type-badge injection-badge">注射剂</span>
+                                <span class="product-type-badge artesun-badge">Artesun® 三联包</span>
+                                <div class="text-sm text-gray-500">
+                                    注册商标: 
+                                    <span class="trademark-tag">Artesun®</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="text-blue-600 hover:text-blue-800 transition-colors accordion-toggle">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="accordion-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- 产品信息 -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">产品规格</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">规格型号</span>
+                                    <span class="font-medium">30mg, 60mg, 120mg</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">包装形式</span>
+                                    <span class="font-medium">三联包：冻干粉针剂 + 0.5ml碳酸氢钠注射液(50mg/ml) + 2.5ml氯化钠注射液(9mg/ml)</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">包装规格</span>
+                                    <span class="font-medium">30mg: (1+1+1)瓶/盒；外箱5×20盒</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">适用地区</span>
+                                    <span class="font-medium">苏丹、坦桑尼亚、赞比亚、马拉维等</span>
+                                </div>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 mt-8">适应症</h4>
+                            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                                <li>恶性疟原虫引起的严重疟疾</li>
+                                <li>脑型疟疾</li>
+                                <li>对口服抗疟药物无效的重症病例</li>
+                            </ul>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 mt-8">用法用量</h4>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p class="text-sm text-blue-800 mb-2">计算剂量公式：</p>
+                                <div class="space-y-1 text-sm">
+                                    <p>• 体重 >20kg: 剂量(mg) = 体重(kg) × 2.4</p>
+                                    <p>• 体重 ≤20kg: 剂量(mg) = 体重(kg) × 3</p>
+                                    <p>• 配制后浓度: 20mg/ml</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 剂量指导表格 -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">剂量指导</h4>
+                            <div class="overflow-x-auto mb-6">
+                                <table class="dosage-table w-full text-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>患者体重</th>
+                                            <th>30mg 规格</th>
+                                            <th>60mg 规格</th>
+                                            <th>120mg 规格</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="font-medium">≤25kg</td>
+                                            <td class="number-display text-center">1盒</td>
+                                            <td class="number-display text-center">1瓶</td>
+                                            <td class="text-center text-gray-400">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-medium">26-50kg</td>
+                                            <td class="number-display text-center">2盒</td>
+                                            <td class="number-display text-center">2瓶</td>
+                                            <td class="number-display text-center">1瓶</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-medium">51-75kg</td>
+                                            <td class="number-display text-center">3盒</td>
+                                            <td class="number-display text-center">3瓶</td>
+                                            <td class="number-display text-center">1½瓶</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-medium">76-100kg</td>
+                                            <td class="number-display text-center">4盒</td>
+                                            <td class="number-display text-center">4瓶</td>
+                                            <td class="number-display text-center">2瓶</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">重要信息</h4>
+                            <div class="space-y-4">
+                                <div class="bg-blue-50 p-3 rounded-lg">
+                                    <p class="text-sm font-medium text-blue-800 mb-1">注册证号：</p>
+                                    <p class="text-xs text-blue-700">苏丹: INJ/05/5444；坦桑尼亚: TZ12H036；赞比亚: 043/008；马拉维: PMPB/PL397/6；尼日利亚: A4-9524</p>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex items-start">
+                                        <svg class="w-5 h-5 text-amber-500 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-700">存储条件：30℃以下保存，避光；配制后溶液30℃以下保存，1小时内使用</p>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <svg class="w-5 h-5 text-amber-500 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-700">生产企业：桂林南药股份有限公司（原上海复星医药产业发展有限公司）</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Argesun® 注射用青蒿琥酯 -->
+            <div class="glass-card rounded-xl p-6 hover-lift medication-card" data-type="injection">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold title-font text-gray-800">注射用青蒿琥酯 <span class="text-indigo-600">(Argesun®)</span></h3>
+                            <div class="flex items-center mt-1 flex-wrap gap-2">
+                                <span class="product-type-badge injection-badge">注射剂</span>
+                                <span class="product-type-badge argesun-badge">Argesun® 两联包</span>
+                                <div class="text-sm text-gray-500">
+                                    注册商标: 
+                                    <span class="trademark-tag">Argesun®</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="text-blue-600 hover:text-blue-800 transition-colors accordion-toggle">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
                 
-                <!-- 剂量表格 -->
-                <div>
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4">D-ARTEPP Dispersible 剂量表</h4>
-                    <div class="overflow-x-auto mb-8">
-                        <table class="dosage-table w-full text-sm">
-                            <thead>
-                                <tr>
-                                    <th>体重范围</th>
-                                    <th>规格</th>
-                                    <th>用量</th>
-                                    <th>用药频率</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="number-display">5kg - <8kg</td>
-                                    <td>20mg/160mg</td>
-                                    <td class="number-display">1粒</td>
-                                    <td>每日1次，连用3日</td>
-                                </tr>
-                                <tr>
-                                    <td class="number-display">8kg - <11kg</td>
-                                    <td>30mg/240mg</td>
-                                    <td class="number-display">1粒</td>
-                                    <td>每日1次，连用3日</td>
-                                </tr>
-                                <tr>
-                                    <td class="number-display">11kg - <17kg</td>
-                                    <td>20mg/160mg</td>
-                                    <td class="number-display">2粒</td>
-                                    <td>每日1次，连用3日</td>
-                                </tr>
-                                <tr>
-                                    <td class="number-display">17kg - <25kg</td>
-                                    <td>30mg/240mg</td>
-                                    <td class="number-display">2粒</td>
-                                    <td>每日1次，连用3日</td>
-                                </tr>
-                                <tr>
-                                    <td class="number-display">25kg - <36kg</td>
-                                    <td>40mg/320mg</td>
-                                    <td class="number-display">2粒</td>
-                                    <td>每日1次，连用3日</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="accordion-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- 产品信息 -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">产品规格</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">规格型号</span>
+                                    <span class="font-medium">30mg, 60mg, 120mg, 180mg</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">包装形式</span>
+                                    <span class="font-medium">两联包：冻干粉针剂 + 6.0ml碳酸氢钠精氨酸注射液(8.4mg/ml+20mg/ml)</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">包装规格</span>
+                                    <span class="font-medium">120mg: (1+1)瓶/盒；外箱5×48盒</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">适用地区</span>
+                                    <span class="font-medium">马拉维、坦桑尼亚、赞比亚、尼日利亚等</span>
+                                </div>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 mt-8">适应症</h4>
+                            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                                <li>恶性疟原虫引起的严重疟疾</li>
+                                <li>儿童重症疟疾（30mg规格专为儿童设计）</li>
+                                <li>对氯喹耐药的疟疾菌株感染</li>
+                            </ul>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 mt-8">用法用量</h4>
+                            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                <p class="text-sm text-indigo-800 mb-2">计算剂量公式：</p>
+                                <div class="space-y-1 text-sm">
+                                    <p>• 体重 >20kg: 剂量(mg) = 体重(kg) × 2.4</p>
+                                    <p>• 体重 ≤20kg: 剂量(mg) = 体重(kg) × 3</p>
+                                    <p>• 配制后浓度: 15mg/ml (30mg规格) / 20mg/ml (60/120mg规格)</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 剂量指导表格 -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">剂量指导</h4>
+                            <div class="overflow-x-auto mb-6">
+                                <table class="dosage-table w-full text-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>患者体重</th>
+                                            <th>30mg 规格</th>
+                                            <th>60mg 规格</th>
+                                            <th>120mg 规格</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="font-medium">≤25kg</td>
+                                            <td class="number-display text-center">2瓶</td>
+                                            <td class="number-display text-center">1瓶</td>
+                                            <td class="text-center text-gray-400">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-medium">26-50kg</td>
+                                            <td class="number-display text-center">4瓶</td>
+                                            <td class="number-display text-center">2瓶</td>
+                                            <td class="number-display text-center">1瓶</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-medium">51-75kg</td>
+                                            <td class="number-display text-center">6瓶</td>
+                                            <td class="number-display text-center">3瓶</td>
+                                            <td class="number-display text-center">1½瓶</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-medium">76-100kg</td>
+                                            <td class="number-display text-center">8瓶</td>
+                                            <td class="number-display text-center">4瓶</td>
+                                            <td class="number-display text-center">2瓶</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">重要信息</h4>
+                            <div class="space-y-4">
+                                <div class="bg-indigo-50 p-3 rounded-lg">
+                                    <p class="text-sm font-medium text-indigo-800 mb-1">注册证号：</p>
+                                    <p class="text-xs text-indigo-700">马拉维: PMPB/PL518/11；坦桑尼亚: TAN20HM0421；赞比亚: ZAMRA-HM-22-51；尼日利亚: A4-100909</p>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex items-start">
+                                        <svg class="w-5 h-5 text-amber-500 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-700">存储条件：原包装30℃以下保存，避光；避免超过30℃；切勿冷藏或冷冻；配制后1小时内使用</p>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <svg class="w-5 h-5 text-amber-500 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-700">生产企业：桂林南药股份有限公司（原上海复星医药产业发展有限公司）</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4">D-ARTEPP 剂量表</h4>
-                    <div class="overflow-x-auto">
-                        <table class="dosage-table w-full text-sm">
-                            <thead>
-                                <tr>
-                                    <th>体重范围</th>
-                                    <th>规格</th>
-                                    <th>用量</th>
-                                    <th>用药频率</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="number-display">36kg - <60kg</td>
-                                    <td>60mg/480mg</td>
-                                    <td class="number-display">2粒</td>
-                                    <td>每日1次，连用3日</td>
-                                </tr>
-                                <tr>
-                                    <td class="number-display">60kg - <80kg</td>
-                                    <td>80mg/640mg</td>
-                                    <td class="number-display">2粒</td>
-                                    <td>每日1次，连用3日</td>
-                                </tr>
-                                <tr>
-                                    <td class="number-display">≥80kg</td>
-                                    <td>80mg/640mg</td>
-                                    <td class="number-display">2粒半</td>
-                                    <td>每日1次，连用3日</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                </div>
+            </div>
+
+            <!-- D-ARTEPP Dispersible Tablets -->
+            <div class="glass-card rounded-xl p-6 hover-lift medication-card" data-type="dispersible">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold title-font text-gray-800">双氢青蒿素哌喹分散片 <span class="text-green-600">(D-ARTEPP® Dispersible Tablets)</span></h3>
+                            <div class="flex items-center mt-1 space-x-2">
+                                <span class="product-type-badge tablet-badge">可分散片剂</span>
+                                <span class="text-sm text-gray-500">适用于儿童及吞咽困难患者</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="text-blue-600 hover:text-blue-800 transition-colors accordion-toggle">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="accordion-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">产品规格</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">规格型号</span>
+                                    <span class="font-medium">20mg/160mg, 30mg/240mg, 40mg/320mg</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">包装规格</span>
+                                    <span class="font-medium">20mg/160mg: 3片/板×2板/盒；外箱10盒/包×80包/箱</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">服用方式</span>
+                                    <span class="font-medium">水中分散后服用，口服给药（Oral route/Voie orale）</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">适用人群</span>
+                                    <span class="font-medium">≥6月龄且体重≥5kg的儿童</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">辅料成分</span>
+                                    <span class="font-medium">含三氯蔗糖（Sucralose）</span>
+                                </div>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 mt-8">用药指导</h4>
+                            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                                <li>治疗疗程：连续3天，每天1次</li>
+                                <li>服用方法：每片至少用10ml水分散，单次剂量不超过50ml水</li>
+                                <li>服用时机：餐前3小时或餐后3小时，保持空腹状态</li>
+                                <li>存储条件：密封容器保存，避光防潮，温度不超过25°C</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">剂量计算表</h4>
+                            <div class="overflow-x-auto mb-6">
+                                <table class="dosage-table w-full text-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>体重范围</th>
+                                            <th>20mg/160mg</th>
+                                            <th>30mg/240mg</th>
+                                            <th>40mg/320mg</th>
+                                            <th>疗程</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="number-display">5kg - <8kg</td>
+                                            <td class="number-display text-center">每日1片</td>
+                                            <td class="text-center">-</td>
+                                            <td class="text-center">-</td>
+                                            <td rowspan="8" class="text-center align-middle">每日1次<br>连续3天</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">8kg - <11kg</td>
+                                            <td class="text-center">-</td>
+                                            <td class="number-display text-center">每日1片</td>
+                                            <td class="text-center">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">11kg - <17kg</td>
+                                            <td class="number-display text-center">每日2片</td>
+                                            <td class="text-center">-</td>
+                                            <td class="number-display text-center">每日1片</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">17kg - <25kg</td>
+                                            <td class="number-display text-center">每日3片</td>
+                                            <td class="number-display text-center">每日2片</td>
+                                            <td class="text-center">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">25kg - <36kg</td>
+                                            <td class="number-display text-center">每日4片</td>
+                                            <td class="text-center">-</td>
+                                            <td class="number-display text-center">每日2片</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">36kg - <60kg</td>
+                                            <td class="number-display text-center">每日6片</td>
+                                            <td class="number-display text-center">每日4片</td>
+                                            <td class="number-display text-center">每日3片</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">60kg - <80kg</td>
+                                            <td class="number-display text-center">每日8片</td>
+                                            <td class="text-center">-</td>
+                                            <td class="number-display text-center">每日4片</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-medium">≥80kg</td>
+                                            <td class="number-display text-center">每日10片</td>
+                                            <td class="text-center">-</td>
+                                            <td class="number-display text-center">每日5片</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="bg-green-50 p-3 rounded-lg mb-4">
+                                <p class="text-sm font-medium text-green-800 mb-1">注册证号：</p>
+                                <p class="text-xs text-green-700">坦桑尼亚: TZ16H0343；马拉维: PMPB/PL518/5；赞比亚: 043/018；苏丹: 13191</p>
+                            </div>
+                            <p class="text-sm text-gray-600">生产企业：桂林南药股份有限公司（原上海复星医药产业发展有限公司）</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- D-ARTEPP Tablets (普通片剂) -->
+            <div class="glass-card rounded-xl p-6 hover-lift medication-card" data-type="tablet">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold title-font text-gray-800">双氢青蒿素哌喹片 <span class="text-purple-600">(D-ARTEPP® Tablets)</span></h3>
+                            <div class="flex items-center mt-1 space-x-2">
+                                <span class="product-type-badge" style="background-color: #f3e8ff; color: #7c3aed; border-color: #ddd6fe;">普通片剂</span>
+                                <span class="text-sm text-gray-500">适用于成人及≥17kg的儿童</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="text-blue-600 hover:text-blue-800 transition-colors accordion-toggle">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="accordion-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">产品规格</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">规格型号</span>
+                                    <span class="font-medium">40mg/320mg, 60mg/480mg, 80mg/640mg</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">包装规格</span>
+                                    <span class="font-medium">80mg/640mg: 6片/板/盒；外箱10盒/包×30包/箱</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">用法用量</span>
+                                    <span class="font-medium">整片吞服，口服给药（Oral route/Voie orale）</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">辅料成分</span>
+                                    <span class="font-medium">无已知作用辅料（Excipient with known effect: None）</span>
+                                </div>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 mt-8">剂量计算表</h4>
+                            <div class="overflow-x-auto mb-4">
+                                <table class="dosage-table w-full text-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>体重范围</th>
+                                            <th>40mg/320mg</th>
+                                            <th>60mg/480mg</th>
+                                            <th>80mg/640mg</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="number-display">17kg - <25kg</td>
+                                            <td class="number-display text-center">每日1.5片</td>
+                                            <td class="number-display text-center">每日1片</td>
+                                            <td class="text-center">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">25kg - <36kg</td>
+                                            <td class="number-display text-center">每日2片</td>
+                                            <td class="text-center">-</td>
+                                            <td class="number-display text-center">每日1片</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">36kg - <60kg</td>
+                                            <td class="number-display text-center">每日3片</td>
+                                            <td class="number-display text-center">每日2片</td>
+                                            <td class="number-display text-center">每日1.5片</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="number-display">60kg - <80kg</td>
+                                            <td class="number-display text-center">每日4片</td>
+                                            <td class="text-center">-</td>
+                                            <td class="number-display text-center">每日2片</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-medium">≥80kg</td>
+                                            <td class="number-display text-center">每日5片</td>
+                                            <td class="text-center">-</td>
+                                            <td class="number-display text-center">每日2.5片</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-sm text-gray-600">疗程：每日1次，连续服用3天</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">重要信息</h4>
+                            <div class="space-y-4">
+                                <div class="bg-purple-50 p-3 rounded-lg">
+                                    <p class="text-sm font-medium text-purple-800 mb-1">注册证号：</p>
+                                    <p class="text-xs text-purple-700">马拉维: PMPB/PL518/8；坦桑尼亚: TZ17H0252；赞比亚: 043/016；苏丹: 12526</p>
+                                </div>
+                                
+                                <div class="p-3 bg-red-50 border border-red-100 rounded-lg">
+                                    <p class="text-sm font-medium text-red-700 mb-1">禁止同时使用的药物：</p>
+                                    <p class="text-xs text-red-600">奎尼丁、胺碘酮、氟喹诺酮类抗生素、部分抗抑郁药、抗精神病药等</p>
+                                </div>
+                                
+                                <div class="p-3 bg-amber-50 border border-amber-100 rounded-lg">
+                                    <p class="text-sm font-medium text-amber-700 mb-1">注意事项：</p>
+                                    <ul class="text-xs text-amber-600 space-y-1">
+                                        <li>• 存储条件：密封容器保存，避光防潮，温度不超过25°C</li>
+                                        <li>• 有心脏病史、电解质紊乱患者禁用</li>
+                                        <li>• 1年内使用不得超过2个疗程，疗程间隔至少2个月</li>
+                                        <li>• 生产企业：桂林南药股份有限公司（原上海复星医药产业发展有限公司）</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 不良反应 -->
-        <div class="glass-card rounded-xl p-6 mb-8 hover-lift">
-            <h3 class="text-lg font-semibold title-font text-gray-800 mb-4">不良反应</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h4 class="font-medium text-gray-800 mb-2">常见不良反应</h4>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm">
-                        <li>恶心、呕吐</li>
-                        <li>腹泻</li>
-                        <li>头痛</li>
-                        <li>头晕</li>
-                        <li>食欲不振</li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-800 mb-2">严重不良反应</h4>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm">
-                        <li>过敏反应</li>
-                        <li>严重皮疹</li>
-                        <li>心律失常</li>
-                        <li>肝功能异常</li>
-                        <li>血液系统异常</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- 禁忌症 -->
-        <div class="glass-card rounded-xl p-6 mb-8 hover-lift">
-            <h3 class="text-lg font-semibold title-font text-gray-800 mb-4">禁忌症</h3>
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div class="flex items-start">
-                    <svg class="w-5 h-5 text-red-600 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                    </svg>
-                    <div class="text-sm text-red-800">
-                        <p class="font-medium mb-1">以下情况禁用</p>
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>对青蒿素类药物过敏者</li>
-                            <li>严重肝肾功能不全者</li>
-                            <li>孕妇（特别是妊娠早期）</li>
-                            <li>哺乳期妇女</li>
-                            <li>严重心脏病患者</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 药物相互作用 -->
-        <div class="glass-card rounded-xl p-6 hover-lift">
-            <h3 class="text-lg font-semibold title-font text-gray-800 mb-4">药物相互作用</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h4 class="font-medium text-gray-800 mb-2">可能影响本品的药物</h4>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm">
-                        <li>抗癫痫药物</li>
-                        <li>抗结核药物</li>
-                        <li>抗真菌药物</li>
-                        <li>抗病毒药物</li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-800 mb-2">本品可能影响的药物</h4>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm">
-                        <li>华法林等抗凝药物</li>
-                        <li>地高辛等强心药物</li>
-                        <li>免疫抑制剂</li>
-                        <li>某些抗生素</li>
-                    </ul>
-                </div>
-            </div>
+        <!-- 通用注意事项 -->
+        <div class="glass-card rounded-xl p-8 mb-12 hover-lift">
+            <h3 class="text-2xl font-bold title-font text-gray-800 mb-6">通用用药指导</h3>
             
-            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div class="flex items-start">
-                    <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div class="text-sm text-blue-800">
-                        <p class="font-medium mb-1">用药提示</p>
-                        <p>如正在使用其他药物，请告知医生，以避免可能的药物相互作用。</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 存储条件 -->
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                        <h4 class="font-semibold text-blue-700">存储条件</h4>
                     </div>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>• 注射剂：30°C以下保存，避免超过30°C，切勿冷藏冷冻</li>
+                        <li>• 片剂：25°C以下保存，密封、避光、防潮</li>
+                        <li>• 防潮密封保存</li>
+                        <li>• 远离儿童触及范围</li>
+                    </ul>
+                </div>
+                
+                <!-- 有效期 -->
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h4 class="font-semibold text-green-700">有效期管理</h4>
+                    </div>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>• 使用前检查有效期</li>
+                        <li>• 过期药品请勿使用</li>
+                        <li>• 注射剂配制后1小时内使用</li>
+                        <li>• 按当地法规处理废弃药品</li>
+                    </ul>
+                </div>
+                
+                <!-- 紧急情况 -->
+                <div class="p-4 bg-red-50 rounded-lg">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <h4 class="font-semibold text-red-700">紧急情况处理</h4>
+                    </div>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>• 过敏反应：立即停药并就医</li>
+                        <li>• 呕吐处理：按时间间隔补服</li>
+                        <li>• 过量服用：立即联系医疗专业人员</li>
+                        <li>• 不良反应：记录症状及时上报</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -346,28 +797,80 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center">
                 <p class="text-gray-600 text-sm">© 2025 医疗剂量计算器. 专业医疗工具，确保用药安全.</p>
-                <p class="text-gray-500 text-xs mt-2">本工具仅供参考，实际用药请遵循医嘱</p>
+                <p class="text-gray-500 text-xs mt-2">本工具仅供医疗专业人员参考，具体用药请遵循临床指南和医嘱</p>
+                <div class="mt-4 flex justify-center space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </a>
+                </div>
             </div>
         </div>
     </footer>
 
+    <!-- JavaScript 功能 -->
     <script>
-        // 页面加载动画
+        // 折叠面板功能
         document.addEventListener('DOMContentLoaded', function() {
-            anime({
-                targets: 'nav',
-                translateY: [-50, 0],
-                opacity: [0, 1],
-                duration: 800,
-                easing: 'easeOutQuad'
+            // 折叠/展开按钮
+            const accordionToggles = document.querySelectorAll('.accordion-toggle');
+            accordionToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    // 切换箭头方向
+                    this.querySelector('svg').classList.toggle('rotate-180');
+                    // 切换内容显示
+                    const content = this.closest('.medication-card').querySelector('.accordion-content');
+                    content.classList.toggle('active');
+                });
             });
+
+            // 产品筛选功能
+            const filterButtons = document.querySelectorAll('[data-filter]');
+            const medicationCards = document.querySelectorAll('.medication-card');
             
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的激活状态
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('bg-blue-100', 'text-blue-700');
+                        btn.classList.add('bg-gray-100', 'text-gray-700');
+                    });
+                    
+                    // 添加当前按钮的激活状态
+                    this.classList.remove('bg-gray-100', 'text-gray-700');
+                    this.classList.add('bg-blue-100', 'text-blue-700');
+                    
+                    const filterValue = this.getAttribute('data-filter');
+                    
+                    // 筛选药品卡片
+                    medicationCards.forEach(card => {
+                        if (filterValue === 'all' || card.getAttribute('data-type') === filterValue) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // 页面加载动画
             anime({
                 targets: '.glass-card',
-                translateY: [30, 0],
                 opacity: [0, 1],
-                delay: anime.stagger(200, {start: 200}),
-                duration: 600,
+                translateY: [20, 0],
+                delay: anime.stagger(100),
+                duration: 500,
                 easing: 'easeOutQuad'
             });
         });
