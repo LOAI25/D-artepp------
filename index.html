@@ -21,7 +21,7 @@
         
         body {
             font-family: 'Noto Sans SC', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background: linear-gradient(135deg, #167bdf 0%, #ea5b08 100%);
             min-height: 100vh;
         }
         
@@ -67,7 +67,7 @@
         
         .product-card.selected {
             border-color: var(--medical-green);
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            background: rgb(230, 228, 226);
         }
         
         .dosage-result {
@@ -333,8 +333,8 @@
         <!-- 产品选择界面 -->
         <div id="productSelection" class="mb-12">
             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold title-font text-gray-800 mb-4" data-i18n="selectProduct">Select Product</h2>
-                <p class="text-gray-600" data-i18n="selectProductDesc">Please select the product for dosage calculation</p>
+                <h2 class="text-3xl font-bold title-font text-white mb-4" data-i18n="selectProduct">Select Product</h2>
+                <p class="text-slate-100" data-i18n="selectProductDesc">Please select the product for dosage calculation</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
@@ -382,13 +382,13 @@
         <!-- 剂量计算界面 -->
         <div id="calculatorInterface" class="hidden">
             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold title-font text-gray-800 mb-4" id="calculatorTitle">D-Artepp Dosage Calculation</h2>
+                <h2 class="text-3xl font-bold title-font text-white mb-4" id="calculatorTitle">D-Artepp Dosage Calculation</h2>
                 <p class="text-gray-600" id="calculatorDesc">Enter patient weight, system will automatically calculate recommended dosage</p>
             </div>
             
             <!-- 注射途径选择（只对Artesun显示） -->
             <div id="injectionRouteSelector" class="hidden mb-8 max-w-lg mx-auto">
-                <h3 class="text-xl font-semibold title-font text-gray-800 mb-4 text-center" data-i18n="injectionRoute">注射途径</h3>
+                <h3 class="text-xl font-semibold title-font text-white mb-4 text-center" data-i18n="injectionRoute">注射途径</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button id="ivRouteBtn" class="route-btn bg-blue-600 text-white px-6 py-4 rounded-xl hover:bg-blue-700 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center" data-route="iv">
                         <div class="font-bold text-lg mb-2" data-i18n="ivRoute">Intravenous (IV)</div>
