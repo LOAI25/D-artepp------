@@ -1,5 +1,6 @@
 // language.js - 语言模块
-// 版本：v8.9
+// 版本：v8.10 (统一使用data-i18n属性管理所有文本)
+// 日期：2024-01-20
 
 // 模块变量
 let currentLanguage;
@@ -17,7 +18,7 @@ export function getCurrentLanguage() {
     return currentLanguage;
 }
 
-// 更新页面文本
+// 更新页面文本 - 统一使用data-i18n属性管理
 export function updatePageText() {
     console.log('Updating page text for language:', currentLanguage);
     
@@ -26,11 +27,24 @@ export function updatePageText() {
         return;
     }
     
+    // 获取当前语言的翻译
+    const t = window.translations[currentLanguage];
+    
     // 更新所有带有data-i18n属性的元素
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
-        if (window.translations[currentLanguage][key]) {
-            element.textContent = window.translations[currentLanguage][key];
+        if (t[key]) {
+            // 保留原始类名，只更新文本内容
+            const originalClass = element.className;
+            element.textContent = t[key];
+            element.className = originalClass; // 确保类名不变
+            
+            // 调试日志
+            if (key.includes('calculator')) {
+                console.log(`Updated ${key}:`, t[key]);
+            }
+        } else {
+            console.warn('Translation key not found:', key, 'for language:', currentLanguage);
         }
     });
     
@@ -48,6 +62,17 @@ export function updatePageText() {
     // 更新体重范围提示
     if (typeof window.updateWeightRangeHint === 'function') {
         window.updateWeightRangeHint();
+    }
+    
+    // 更新计算器标题和描述（如果当前在计算器界面）
+    updateCalculatorTitleForCurrentLanguage();
+    
+    // 更新语言切换器UI
+    updateLanguageSwitcherUI();
+    
+    // 强制更新注射途径按钮
+    if (typeof window.updateRouteButtons === 'function') {
+        window.updateRouteButtons();
     }
 }
 
@@ -82,17 +107,6 @@ export function changeLanguage(lang) {
         // 更新页面文本
         updatePageText();
         
-        // 更新语言切换器UI
-        updateLanguageSwitcherUI();
-        
-        // 强制更新注射途径按钮
-        if (typeof window.updateRouteButtons === 'function') {
-            window.updateRouteButtons();
-        }
-        
-        // 特别更新计算器标题和描述（如果当前在计算器界面）
-        updateCalculatorTitleForCurrentLanguage();
-        
         console.log(`Language changed to: ${lang}`);
     } else {
         console.error('Invalid language or translations not loaded:', lang);
@@ -109,22 +123,12 @@ function updateCalculatorTitleForCurrentLanguage() {
     
     console.log('Updating calculator title for language change:', currentLanguage);
     
-    // 首先尝试调用主文件中的更新函数
-    if (typeof window.updateCalculatorTitleAndDesc === 'function') {
-        window.updateCalculatorTitleAndDesc();
-    } else {
-        // 如果函数不可用，直接更新
-        updateCalculatorTitleDirectly();
-    }
-}
-
-// 直接更新计算器标题和描述
-function updateCalculatorTitleDirectly() {
+    // 获取计算器标题和描述元素
     const calculatorTitle = document.querySelector('#calculatorInterface .text-3xl');
-    const calculatorDesc = document.querySelector('#calculatorInterface .text-gray-600');
+    const calculatorDesc = document.getElementById('calculatorDesc');
     
     if (!calculatorTitle || !calculatorDesc || !window.selectedProduct || !window.translations[currentLanguage]) {
-        console.error('Cannot update calculator title directly:', {
+        console.error('Cannot update calculator title:', {
             calculatorTitle: !!calculatorTitle,
             calculatorDesc: !!calculatorDesc,
             selectedProduct: !!window.selectedProduct,
@@ -133,23 +137,43 @@ function updateCalculatorTitleDirectly() {
         return;
     }
     
-    const translations = window.translations[currentLanguage];
+    const t = window.translations[currentLanguage];
     
-    console.log('Directly updating calculator title for product:', window.selectedProduct.id);
+    // 根据当前选择的产品设置正确的翻译键
+    let titleKey = 'calculatorTitle';
+    let descKey = 'calculatorDesc';
     
     if (window.selectedProduct.id === 'dartepp') {
-        calculatorTitle.textContent = translations.darteppCalculatorTitle || 'D-Artepp® Dosage Calculation';
-        calculatorDesc.textContent = translations.darteppCalculatorDesc || 'Select patient weight by sliding the dial, system will calculate recommended D-Artepp® dosage';
+        titleKey = 'darteppCalculatorTitle';
+        descKey = 'darteppCalculatorDesc';
     } else if (window.selectedProduct.id === 'argesun') {
-        calculatorTitle.textContent = translations.argesunCalculatorTitle || 'Argesun® Dosage Calculation';
-        calculatorDesc.textContent = translations.argesunCalculatorDesc || 'Select patient weight, system will calculate recommended Argesun® dosage';
+        titleKey = 'argesunCalculatorTitle';
+        descKey = 'argesunCalculatorDesc';
     } else if (window.selectedProduct.id === 'artesun') {
-        calculatorTitle.textContent = translations.artesunCalculatorTitle || 'Artesun® Dosage Calculation';
-        calculatorDesc.textContent = translations.artesunCalculatorDesc || 'Select patient weight and injection route, system will calculate recommended Artesun® dosage';
+        titleKey = 'artesunCalculatorTitle';
+        descKey = 'artesunCalculatorDesc';
     }
     
-    console.log('Updated title:', calculatorTitle.textContent);
-    console.log('Updated description:', calculatorDesc.textContent);
+    // 确保标题元素有正确的data-i18n属性
+    if (!calculatorTitle.hasAttribute('data-i18n') || calculatorTitle.getAttribute('data-i18n') !== titleKey) {
+        calculatorTitle.setAttribute('data-i18n', titleKey);
+    }
+    
+    // 确保描述元素有正确的data-i18n属性
+    if (calculatorDesc.getAttribute('data-i18n') !== descKey) {
+        calculatorDesc.setAttribute('data-i18n', descKey);
+    }
+    
+    // 更新文本内容
+    if (t[titleKey]) {
+        calculatorTitle.textContent = t[titleKey];
+    }
+    if (t[descKey]) {
+        calculatorDesc.textContent = t[descKey];
+    }
+    
+    console.log('Updated calculator title:', calculatorTitle.textContent);
+    console.log('Updated calculator description:', calculatorDesc.textContent);
 }
 
 // 更新语言切换器UI
@@ -221,7 +245,6 @@ export function initializeLanguage() {
     
     // 更新页面
     updatePageText();
-    updateLanguageSwitcherUI();
     
     console.log('Language initialized to:', currentLanguage);
 }
@@ -263,5 +286,70 @@ export function setupLanguageSwitcher() {
         });
     } else {
         console.error('Language switcher elements not found');
+    }
+}
+
+// 辅助函数：为元素设置data-i18n属性
+export function setElementTranslation(element, translationKey) {
+    if (element) {
+        element.setAttribute('data-i18n', translationKey);
+        
+        // 如果已经有当前语言的翻译，立即更新
+        if (window.translations && window.translations[currentLanguage] && 
+            window.translations[currentLanguage][translationKey]) {
+            const originalClass = element.className;
+            element.textContent = window.translations[currentLanguage][translationKey];
+            element.className = originalClass;
+        }
+    }
+}
+
+// 辅助函数：批量设置data-i18n属性
+export function setMultipleTranslations(translationsMap) {
+    Object.keys(translationsMap).forEach(selector => {
+        const element = document.querySelector(selector);
+        const translationKey = translationsMap[selector];
+        
+        if (element) {
+            setElementTranslation(element, translationKey);
+        } else {
+            console.warn('Element not found for selector:', selector);
+        }
+    });
+}
+
+// 导出用于动态更新计算器标题的函数
+export function updateCalculatorTitle(productId) {
+    if (!productId || !window.selectedProduct) return;
+    
+    const calculatorTitle = document.querySelector('#calculatorInterface .text-3xl');
+    const calculatorDesc = document.getElementById('calculatorDesc');
+    
+    if (!calculatorTitle || !calculatorDesc) return;
+    
+    // 设置正确的翻译键
+    let titleKey = 'calculatorTitle';
+    let descKey = 'calculatorDesc';
+    
+    if (productId === 'dartepp') {
+        titleKey = 'darteppCalculatorTitle';
+        descKey = 'darteppCalculatorDesc';
+    } else if (productId === 'argesun') {
+        titleKey = 'argesunCalculatorTitle';
+        descKey = 'argesunCalculatorDesc';
+    } else if (productId === 'artesun') {
+        titleKey = 'artesunCalculatorTitle';
+        descKey = 'artesunCalculatorDesc';
+    }
+    
+    // 更新data-i18n属性
+    calculatorTitle.setAttribute('data-i18n', titleKey);
+    calculatorDesc.setAttribute('data-i18n', descKey);
+    
+    // 立即更新文本
+    if (window.translations && window.translations[currentLanguage]) {
+        const t = window.translations[currentLanguage];
+        if (t[titleKey]) calculatorTitle.textContent = t[titleKey];
+        if (t[descKey]) calculatorDesc.textContent = t[descKey];
     }
 }

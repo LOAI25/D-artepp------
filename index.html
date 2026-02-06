@@ -382,13 +382,15 @@
         <!-- 剂量计算界面 -->
         <div id="calculatorInterface" class="hidden">
             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold title-font text-white mb-4" id="calculatorTitle">D-Artepp Dosage Calculation</h2>
-                <p class="text-gray-600" id="calculatorDesc">Enter patient weight, system will automatically calculate recommended dosage</p>
+                <!-- 计算器标题使用 data-i18n 属性 -->
+                <h2 class="text-3xl font-bold title-font text-white mb-4" id="calculatorTitle" data-i18n="calculatorTitle">Dosage Calculation</h2>
+                <!-- 计算器描述使用 data-i18n 属性 -->
+                <p class="text-slate-100" id="calculatorDesc" data-i18n="calculatorDesc">Enter patient weight, system will automatically calculate recommended dosage</p>
             </div>
             
             <!-- 注射途径选择（只对Artesun显示） -->
             <div id="injectionRouteSelector" class="hidden mb-8 max-w-lg mx-auto">
-                <h3 class="text-xl font-semibold title-font text-white mb-4 text-center" data-i18n="injectionRoute">注射途径</h3>
+                <h3 class="text-xl font-semibold title-font text-white mb-4 text-center" data-i18n="injectionRoute">Injection Route</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button id="ivRouteBtn" class="route-btn bg-blue-600 text-white px-6 py-4 rounded-xl hover:bg-blue-700 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center justify-center" data-route="iv">
                         <div class="font-bold text-lg mb-2" data-i18n="ivRoute">Intravenous (IV)</div>
@@ -399,7 +401,7 @@
                         <div class="text-sm opacity-90" data-i18n="imRouteDesc">20 mg/ml · Anterior thigh injection</div>
                     </button>
                 </div>
-                <p class="text-sm text-gray-600 mb-4 text-center" data-i18n="routeSelectionInstruction">
+                <p class="text-sm text-slate-100 mb-4 text-center" data-i18n="routeSelectionInstruction">
                     Select IV for slow intravenous injection or IM for intramuscular injection
                 </p>
             </div>
@@ -427,7 +429,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                                 </svg>
-                                <span id="warningMessage">Weight must be at least 5kg for D-Artepp</span>
+                                <span id="warningMessage" data-i18n="weightWarning">Weight must be at least 5kg for D-Artepp</span>
                             </p>
                         </div>
                     </div>
@@ -461,25 +463,26 @@
                         
                         <!-- 动态剂量结果（初始隐藏） -->
                         <div id="dynamicDosageResult" class="hidden space-y-4">
+                            <!-- 所有剂量卡片标题和描述都使用 data-i18n 属性 -->
                             <div class="dosage-card">
-                                <div class="dosage-card-title">First Dose (0h)</div>
+                                <div class="dosage-card-title" data-i18n="firstDoseTitle">First Dose (0h)</div>
                                 <div class="dosage-value" id="firstDoseValue">0 mg</div>
-                                <div class="dosage-note" id="firstDoseNote">Administer immediately</div>
+                                <div class="dosage-note" id="firstDoseNote" data-i18n="firstDoseNote">Administer immediately</div>
                             </div>
                             <div class="dosage-card">
-                                <div class="dosage-card-title">Second Dose (12h)</div>
+                                <div class="dosage-card-title" data-i18n="secondDoseTitle">Second Dose (12h)</div>
                                 <div class="dosage-value" id="secondDoseValue">0 mg</div>
-                                <div class="dosage-note" id="secondDoseNote">12 hours after first dose</div>
+                                <div class="dosage-note" id="secondDoseNote" data-i18n="secondDoseNote">12 hours after first dose</div>
                             </div>
                             <div class="dosage-card">
-                                <div class="dosage-card-title">Third Dose (24h)</div>
+                                <div class="dosage-card-title" data-i18n="thirdDoseTitle">Third Dose (24h)</div>
                                 <div class="dosage-value" id="thirdDoseValue">0 mg</div>
-                                <div class="dosage-note" id="thirdDoseNote">24 hours after first dose</div>
+                                <div class="dosage-note" id="thirdDoseNote" data-i18n="thirdDoseNote">24 hours after first dose</div>
                             </div>
                             <div class="dosage-card">
-                                <div class="dosage-card-title">Fourth Dose (48h)</div>
+                                <div class="dosage-card-title" data-i18n="fourthDoseTitle">Fourth Dose (48h)</div>
                                 <div class="dosage-value" id="fourthDoseValue">0 mg</div>
-                                <div class="dosage-note" id="fourthDoseNote">48 hours after first dose</div>
+                                <div class="dosage-note" id="fourthDoseNote" data-i18n="fourthDoseNote">48 hours after first dose</div>
                             </div>
                         </div>
                     </div>

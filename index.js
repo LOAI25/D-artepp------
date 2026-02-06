@@ -1,5 +1,5 @@
 // index.js - 主入口文件 (模块化重构版)
-// 版本：v8.9+ (整合图片加载 + 模块化兼容)
+// 版本：v8.10 (与language.js v8.10兼容)
 // 日期：2024-01-20
 
 // ========== 1. 新增：产品图片配置 ==========
@@ -154,7 +154,7 @@ function initializeGlobalDependencies() {
 
 // ========== 6. 核心初始化 (保留原有逻辑 + 图片功能整合) ==========
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Medical Dosage Calculator loaded (v8.9+)');
+    console.log('Medical Dosage Calculator loaded (v8.10+)');
     
     // 确保全局翻译数据可用（先于模块初始化）
     window.translations = translationsModule.translations || {};
@@ -318,7 +318,7 @@ function bindProductSelectionButtons() {
     });
 }
 
-// 处理产品卡片点击 (新增：整合图片加载)
+// 处理产品卡片点击 (新增：整合图片加载和翻译更新)
 function handleProductCardClick(event) {
     const card = event.currentTarget;
     const productId = card.getAttribute('data-product');
@@ -453,7 +453,7 @@ window.selectProduct = function(product) {
     }
 }
 
-// 显示计算器界面 (保留原有逻辑 + 图片加载)
+// 显示计算器界面 (保留原有逻辑 + 图片加载和翻译更新)
 function showCalculatorInterface() {
     const productSelection = document.getElementById('productSelection');
     const calculatorInterface = document.getElementById('calculatorInterface');
@@ -466,7 +466,7 @@ function showCalculatorInterface() {
         
         console.log('Showing calculator for:', window.selectedProduct.name);
         
-        // 更新计算器标题和描述（先做这个，确保界面显示正确）
+        // 更新计算器标题和描述（使用新的data-i18n系统）
         window.updateCalculatorTitleAndDesc();
         
         // 新增：加载产品图片
@@ -521,6 +521,11 @@ function showCalculatorInterface() {
         if (typeof checkWeightWarning === 'function') {
             checkWeightWarning();
         }
+        
+        // 确保语言模块更新计算器标题
+        if (languageModule.updateCalculatorTitle) {
+            languageModule.updateCalculatorTitle(window.selectedProduct.id);
+        }
     } else {
         console.error('Cannot show calculator interface:', {
             productSelection: !!productSelection,
@@ -547,7 +552,7 @@ function showProductSelection() {
     }
 }
 
-// ========== 9. 更新计算器标题和描述 (保留原有逻辑) ==========
+// ========== 9. 更新计算器标题和描述 (更新为使用data-i18n系统) ==========
 window.updateCalculatorTitleAndDesc = function() {
     if (!window.selectedProduct || !window.translations) {
         console.warn('Cannot update calculator title: missing product or translations');
@@ -555,7 +560,7 @@ window.updateCalculatorTitleAndDesc = function() {
     }
     
     const calculatorTitle = document.querySelector('#calculatorInterface .text-3xl');
-    const calculatorDesc = document.querySelector('#calculatorInterface .text-gray-600');
+    const calculatorDesc = document.getElementById('calculatorDesc');
     
     if (!calculatorTitle || !calculatorDesc) {
         console.error('Calculator title or description elements not found');
@@ -567,15 +572,39 @@ window.updateCalculatorTitleAndDesc = function() {
     
     console.log('Updating calculator title for:', window.selectedProduct.id, 'in language:', lang);
     
+    // 设置正确的翻译键
+    let titleKey = 'calculatorTitle';
+    let descKey = 'calculatorDesc';
+    
     if (window.selectedProduct.id === 'dartepp') {
-        calculatorTitle.textContent = translations.darteppCalculatorTitle || 'D-Artepp® Dosage Calculation';
-        calculatorDesc.textContent = translations.darteppCalculatorDesc || 'Select patient weight by sliding the dial, system will calculate recommended D-Artepp® dosage';
+        titleKey = 'darteppCalculatorTitle';
+        descKey = 'darteppCalculatorDesc';
     } else if (window.selectedProduct.id === 'argesun') {
-        calculatorTitle.textContent = translations.argesunCalculatorTitle || 'Argesun® Dosage Calculation';
-        calculatorDesc.textContent = translations.argesunCalculatorDesc || 'Select patient weight, system will calculate recommended Argesun® dosage';
+        titleKey = 'argesunCalculatorTitle';
+        descKey = 'argesunCalculatorDesc';
     } else if (window.selectedProduct.id === 'artesun') {
-        calculatorTitle.textContent = translations.artesunCalculatorTitle || 'Artesun® Dosage Calculation';
-        calculatorDesc.textContent = translations.artesunCalculatorDesc || 'Select patient weight and injection route, system will calculate recommended Artesun® dosage';
+        titleKey = 'artesunCalculatorTitle';
+        descKey = 'artesunCalculatorDesc';
+    }
+    
+    // 使用language模块的辅助函数设置data-i18n属性
+    if (languageModule.setMultipleTranslations) {
+        languageModule.setMultipleTranslations({
+            '#calculatorInterface .text-3xl': titleKey,
+            '#calculatorDesc': descKey
+        });
+    } else {
+        // 备用方案：直接设置属性
+        calculatorTitle.setAttribute('data-i18n', titleKey);
+        calculatorDesc.setAttribute('data-i18n', descKey);
+        
+        // 更新文本内容
+        if (translations[titleKey]) {
+            calculatorTitle.textContent = translations[titleKey];
+        }
+        if (translations[descKey]) {
+            calculatorDesc.textContent = translations[descKey];
+        }
     }
     
     console.log('Updated title:', calculatorTitle.textContent);
@@ -597,6 +626,11 @@ window.changeLanguage = function(lang) {
     if (calculatorInterface && !calculatorInterface.classList.contains('hidden') && window.selectedProduct) {
         console.log('Updating calculator title after language change');
         window.updateCalculatorTitleAndDesc();
+        
+        // 使用language模块更新计算器标题
+        if (languageModule.updateCalculatorTitle) {
+            languageModule.updateCalculatorTitle(window.selectedProduct.id);
+        }
     }
 };
 
@@ -623,49 +657,11 @@ window.checkWeightWarning = function() {
     
     if (window.currentWeight < minWeight) {
         warningEl.classList.remove('hidden');
+        // 使用data-i18n属性管理警告消息
         warningMsg.textContent = translations.weightWarning || `Weight must be at least ${minWeight}kg for ${window.selectedProduct?.name || 'this product'}`;
     } else {
         warningEl.classList.add('hidden');
     }
-};
-
-// 添加调试函数 (保留原有逻辑)
-window.debugState = function() {
-    console.log('=== DEBUG STATE ===');
-    console.log('Global variables:', {
-        currentWeight: window.currentWeight,
-        selectedProduct: window.selectedProduct?.id || 'none',
-        currentLanguage: window.currentLanguage,
-        injectionRoute: window.injectionRoute,
-        translations: window.translations ? 'loaded' : 'missing',
-        darteppData: window.darteppData ? 'loaded' : 'missing',
-        argesunData: window.argesunData ? 'loaded' : 'missing',
-        artesunData: window.artesunData ? 'loaded' : 'missing',
-        imageLoader: typeof window.loadProductImage // 新增：调试图片加载函数
-    });
-    console.log('Available functions:', {
-        selectProduct: typeof window.selectProduct,
-        changeLanguage: typeof window.changeLanguage,
-        setInjectionRoute: typeof window.setInjectionRoute,
-        updateDosageDisplay: typeof window.updateDosageDisplay,
-        updateCalculatorTitleAndDesc: typeof window.updateCalculatorTitleAndDesc,
-        setWeight: typeof window.setWeight,
-        checkWeightWarning: typeof window.checkWeightWarning,
-        loadProductImage: typeof window.loadProductImage // 新增：调试图片加载函数
-    });
-    
-    // 测试计算器标题元素
-    const calculatorTitle = document.querySelector('#calculatorInterface .text-3xl');
-    const calculatorDesc = document.querySelector('#calculatorInterface .text-gray-600');
-    console.log('Calculator elements:', {
-        calculatorTitle: calculatorTitle ? 'found' : 'not found',
-        calculatorDesc: calculatorDesc ? 'found' : 'not found',
-        calculatorProductImage: document.getElementById('calculatorProductImage') ? 'found' : 'not found', // 新增：调试图片容器
-        calculatorVisible: document.getElementById('calculatorInterface') && 
-                         !document.getElementById('calculatorInterface').classList.contains('hidden')
-    });
-    
-    console.log('=== END DEBUG ===');
 };
 
 // ========== 11. 注射途径按钮事件绑定 (新增：模块化兼容) ==========
@@ -685,4 +681,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-console.log('Medical Dosage Calculator主脚本已加载 (v8.9+ 模块化重构版)');
+// ========== 12. 添加调试函数 (保留原有逻辑) ==========
+window.debugState = function() {
+    console.log('=== DEBUG STATE ===');
+    console.log('Global variables:', {
+        currentWeight: window.currentWeight,
+        selectedProduct: window.selectedProduct?.id || 'none',
+        currentLanguage: window.currentLanguage,
+        injectionRoute: window.injectionRoute,
+        translations: window.translations ? 'loaded' : 'missing',
+        darteppData: window.darteppData ? 'loaded' : 'missing',
+        argesunData: window.argesunData ? 'loaded' : 'missing',
+        artesunData: window.artesunData ? 'loaded' : 'missing',
+        imageLoader: typeof window.loadProductImage
+    });
+    console.log('Available functions:', {
+        selectProduct: typeof window.selectProduct,
+        changeLanguage: typeof window.changeLanguage,
+        setInjectionRoute: typeof window.setInjectionRoute,
+        updateDosageDisplay: typeof window.updateDosageDisplay,
+        updateCalculatorTitleAndDesc: typeof window.updateCalculatorTitleAndDesc,
+        setWeight: typeof window.setWeight,
+        checkWeightWarning: typeof window.checkWeightWarning,
+        loadProductImage: typeof window.loadProductImage
+    });
+    
+    // 测试计算器标题元素
+    const calculatorTitle = document.querySelector('#calculatorInterface .text-3xl');
+    const calculatorDesc = document.getElementById('calculatorDesc');
+    console.log('Calculator elements:', {
+        calculatorTitle: calculatorTitle ? 'found' : 'not found',
+        calculatorDesc: calculatorDesc ? 'found' : 'not found',
+        calculatorTitleDataI18n: calculatorTitle?.getAttribute('data-i18n') || 'none',
+        calculatorDescDataI18n: calculatorDesc?.getAttribute('data-i18n') || 'none',
+        calculatorProductImage: document.getElementById('calculatorProductImage') ? 'found' : 'not found',
+        calculatorVisible: document.getElementById('calculatorInterface') && 
+                         !document.getElementById('calculatorInterface').classList.contains('hidden')
+    });
+    
+    console.log('=== END DEBUG ===');
+};
+
+console.log('Medical Dosage Calculator主脚本已加载 (v8.10+ 模块化重构版)');
